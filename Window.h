@@ -13,8 +13,6 @@
 #include "Sphere.h"
 #include "Humanoid.h"
 #include "shader.h"
-#include "Points.h"
-#include "Lines.h"
 #include "Skybox.h"
 
 class Window
@@ -28,15 +26,6 @@ public:
 	static GLuint skyboxTexture;
 	static Sphere* sphere; // A horrible sphere
 	static Group* track;
-	static Points* anchors;
-	static Points* handles;
-	static Lines* lines;
-
-	static float velocity; // velocity of sphere
-	static float time; // t
-
-	static glm::vec3 highestPoint;
-	static float highestTime;
 
 	static void initialize_objects();
 	static void clean_up();

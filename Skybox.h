@@ -25,7 +25,7 @@ public:
 	void draw(GLuint);
 	GLuint cubemapTexture;
 
-	unsigned char* loadPPM(const char* filename, int& width, int& height);
+	static unsigned char* loadPPM(const char* filename, int& width, int& height);
 	GLuint loadCubemap(std::vector<const GLchar*> faces);
 
 	// These variables are needed for the shader program
