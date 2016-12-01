@@ -1,8 +1,7 @@
 #include "window.h"
 #include "Skybox.h"
 #include <iostream>
-#include "Humanoid.h"
-#include "Bezier.h"
+#include "Floor.h"
 
 using namespace std;
 
@@ -10,7 +9,6 @@ const char* window_title = "GLFW Starter Project";
 Skybox* skybox;
 GLint shaderProgram;
 GLint skyboxShader;
-GLint pointShader;
 GLint sphereShader;
 
 // On some systems you need to change this to the absolute path
@@ -18,8 +16,6 @@ GLint sphereShader;
 #define FRAGMENT_SHADER_PATH "../shader.frag"
 #define SKYBOX_VERTEX_SHADER_PATH "../skyboxshader.vert"
 #define SKYBOX_FRAGMENT_SHADER_PATH "../skyboxshader.frag"
-#define POINT_VERTEX_SHADER_PATH "../pointshader.vert"
-#define POINT_FRAGMENT_SHADER_PATH "../pointshader.frag"
 #define SPHERE_VERTEX_SHADER_PATH "../sphereShader.vert"
 #define SPHERE_FRAGMENT_SHADER_PATH "../sphereShader.frag"
 
@@ -28,6 +24,13 @@ glm::vec3 cam_pos(0.0f, 5.0f, 20.0f);		// e  | Position of camera
 glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
 glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
 
+// Sphere view
+glm::vec3 sphere_cam_pos(0.0f, 5.0f, 20.0f);		// e  | Position of camera
+glm::vec3 sphere_cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
+glm::vec3 sphere_cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
+
+int sphereCamera = 0; // 0 for default, 1 for sphere
+
 int Window::width;
 int Window::height;
 
@@ -35,17 +38,13 @@ glm::mat4 Window::P;
 glm::mat4 Window::V;
 
 Sphere* Window::sphere;
-Group* Window::track;
-Points* Window::anchors;
-Points* Window::handles;
-Lines* Window::lines;
-
-float Window::velocity;
-float Window::time;
-
-glm::vec3 Window::highestPoint;
-float Window::highestTime;
 glm::vec3 spherePos;
+glm::vec4 sphereDir;
+float speed = 0.05f;
+
+Group* root;
+
+GLFWwindow* windowInstance;
 
 int rmbDown;
 int lmbDown;
@@ -65,46 +64,22 @@ void Window::initialize_objects()
 	click = 0;
 	prevX = 0;
 	prevY = 0;
-	velocity = 0;
-	time = 0;
-	prevPoint = glm::vec3();
-	highestPoint = glm::vec3(0.0f);
-	highestTime = 0.0f;
-	time = 0.0f;
 
+	root = new Group();
 	skybox = new Skybox();
-	track = new Group();
 	Window::sphere = new Sphere(0);
 
-	// Make the curves, stick them in a circle
-	Bezier* first = new Bezier(NULL, glm::vec3(5.0f, 3.0f, 0.0f), 0);
-	spherePos = glm::vec3(5.0f, 3.0f, 0.0f);
-	Bezier* prev = first;
-	track->addChild(first);
-	int i = 1;
-	for (int angle = 36; angle < 360; angle += 36)
-	{
-		float x = cos(angle / 180.0f * glm::pi<float>()) * 5.0f;
-		float z = sin(angle / 180.0f * glm::pi<float>()) * 5.0f;
-		Bezier* curr = new Bezier(prev, glm::vec3(x, 0.0f, z), i);
-		curr->p0 = prev->p3;
-		curr->update();
-		track->addChild(curr);
-		i++;
+	Floor* floor = new Floor();
+	root->addChild(floor);
 
-		prev = curr;
-	}
-	first->setPrev(prev);
-
-	// Make the control points
-	Window::anchors = new Points(1);
-	Window::handles = new Points(0);
-	Window::lines = new Lines();
+	spherePos = glm::vec3(0.0f, 1.0f, 0.0f);
+	sphereDir = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+	sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -4.0f) + glm::vec3(0.0f, 2.0f, 0.0f));
+	sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
 
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 	skyboxShader = LoadShaders(SKYBOX_VERTEX_SHADER_PATH, SKYBOX_FRAGMENT_SHADER_PATH);
-	pointShader = LoadShaders(POINT_VERTEX_SHADER_PATH, POINT_FRAGMENT_SHADER_PATH);
 	sphereShader = LoadShaders(SPHERE_VERTEX_SHADER_PATH, SPHERE_FRAGMENT_SHADER_PATH);
 }
 
@@ -113,14 +88,10 @@ void Window::clean_up()
 {
 	delete(Window::sphere);
 	delete(skybox);
-	delete(track);
-	delete(anchors);
-	delete(handles);
-	delete(lines);
+	delete(root);
 
 	glDeleteProgram(shaderProgram);
 	glDeleteProgram(skyboxShader);
-	glDeleteProgram(pointShader);
 	glDeleteProgram(sphereShader);
 }
 
@@ -146,10 +117,10 @@ GLFWwindow* Window::create_window(int width, int height)
 #endif
 
 	// Create the GLFW window
-	GLFWwindow* window = glfwCreateWindow(width, height, window_title, NULL, NULL);
+	windowInstance = glfwCreateWindow(width, height, window_title, NULL, NULL);
 
 	// Check if the window could not be created
-	if (!window)
+	if (!windowInstance)
 	{
 		fprintf(stderr, "Failed to open GLFW window.\n");
 		fprintf(stderr, "Either GLFW is not installed or your graphics card does not support modern OpenGL.\n");
@@ -158,17 +129,17 @@ GLFWwindow* Window::create_window(int width, int height)
 	}
 
 	// Make the context of the window
-	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(windowInstance);
 
 	// Set swap interval to 1
 	glfwSwapInterval(1);
 
 	// Get the width and height of the framebuffer to properly resize the window
-	glfwGetFramebufferSize(window, &width, &height);
+	glfwGetFramebufferSize(windowInstance, &width, &height);
 	// Call the resize callback to make sure things get drawn immediately
-	Window::resize_callback(window, width, height);
+	Window::resize_callback(windowInstance, width, height);
 
-	return window;
+	return windowInstance;
 }
 
 void Window::resize_callback(GLFWwindow* window, int width, int height)
@@ -181,7 +152,10 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 	if (height > 0)
 	{
 		Window::P = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
-		Window::V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+		if (sphereCamera)
+			Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
+		else
+			Window::V = glm::lookAt(cam_pos, cam_look_at, cam_up);
 	}
 }
 
@@ -191,35 +165,34 @@ void Window::idle_callback()
 
 void Window::display_callback(GLFWwindow* window)
 {
-	// Calculate position of sphere
-	if (!paused)
-	{
-		float h = highestPoint.y - spherePos.y;
-		if (h > 0)
-			velocity = glm::sqrt(0.000001f * h) + 0.00001f;
-		else
-			velocity = 0.00001f;
+	// I'm putting these here because if I put it in key callback it's very slow and weird to control
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		sphereDir = glm::rotate(glm::mat4(1.0f), 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		sphereDir = glm::rotate(glm::mat4(1.0f), -5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 
-		time = time + velocity;
-	}
-	while (time > 10)
-		time -= 10;
-	float t = time - (int)time;
-	int index = (int)(time - t);
-	spherePos = ((Bezier*)track->children[index])->makePoint(t);
-	glm::mat4 C = glm::translate(glm::mat4(1.0f), spherePos);
+	// move
+	spherePos = spherePos + glm::vec3(sphereDir) * speed;
 
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Render stuff
 	skybox->draw(skyboxShader);
-	track->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.0f));
-	lines->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-	anchors->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	handles->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	sphere->draw(sphereShader, C, cam_pos);
+	if (sphereCamera)
+	{
+		// from pov of sphere
+		sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -4.0f) + glm::vec3(0.0f, 2.0f, 0.0f));
+		sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
+		Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
+		sphere->draw(sphereShader, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
+	}
+	else
+	{
+		// default camera
+		sphere->draw(sphereShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
+	}
+	root->draw(skyboxShader, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -239,19 +212,19 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 
-		// Pause
-		if (key == GLFW_KEY_P)
+		// V to toggle view
+		if (key == GLFW_KEY_V)
 		{
-			if (paused != 0)
-				paused = 0;
+			if (sphereCamera)
+			{
+				sphereCamera = 0;
+				Window::V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+			}
 			else
-				paused = 1;
-		}
-
-		// Reset
-		if (key == GLFW_KEY_R)
-		{
-			time = highestTime;
+			{
+				sphereCamera = 1;
+				Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
+			}
 		}
 	}
 }
@@ -260,66 +233,9 @@ void Window::cursor_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	glm::vec3 currPoint = trackBallMapping(xpos, ypos, width, height);
 
-	if (click)
+	if (lmbDown && !sphereCamera)
 	{
-		click = 0;
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		anchors->drawSelect(pointShader);
-		handles->drawSelect(pointShader);
-
-		unsigned char result[4];
-		glReadPixels((int)xpos, height - (int)ypos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &result);
-
-		dragging = result[0];
-		
-
-
-		// Clear the color and depth buffers
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Render stuff
-		skybox->draw(skyboxShader);
-		track->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.0f));
-		lines->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		anchors->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		handles->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	}
-
-	if (lmbDown)
-	{
-		if (dragging != NULL && dragging > 0)
-		{
-			// Drag a control point
-			glm::vec4 move = glm::vec4((xpos - prevX), (prevY - ypos), 0.0f, 0.0f);
-			move = glm::normalize(move) / 10.0f;
-			move = glm::inverse(Window::P) * move;
-			move = glm::inverse(Window::V) * move;
-
-			// Find which point we're actually dragging
-			if (dragging <= 80)
-			{
-				// Anchors
-				Bezier* bezier = (Bezier*)track->children[dragging / 8 - 1];
-				bezier->moveAnchor(glm::vec3(move));
-			}
-			else
-			{
-				// Handles
-				int index = (dragging - 88) / 16;
-				cout << index << endl;
-				Bezier* bezier = (Bezier*)track->children[index];
-				if ((dragging - 88) - index * 16 == 8) //even = first
-				{
-					cout << "second" << endl;
-					bezier->move2(glm::vec3(move));
-				}
-				else
-					bezier->move1(glm::vec3(move));
-			}
-		}
-		else if (prevPoint.x != 0 || prevPoint.y != 0 || prevPoint.z != 0)
+		if (prevPoint.x != 0 || prevPoint.y != 0 || prevPoint.z != 0)
 		{
 			float angle;
 			// Perform horizontal (y-axis) rotation

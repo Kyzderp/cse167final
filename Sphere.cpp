@@ -134,7 +134,7 @@ void Sphere::makeSphere()
 	int slices = 20;
 	int stacks = 10;
 	float pi = glm::pi<float>();
-	float radius = 0.5f;
+	float radius = 1.0f;
 
 	int angleInc = 180 / stacks;
 	// theta is angle from Z axis

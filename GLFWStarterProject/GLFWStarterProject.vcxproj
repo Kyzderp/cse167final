@@ -19,36 +19,34 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Bezier.h" />
+    <ClInclude Include="..\Cube.h" />
+    <ClInclude Include="..\Floor.h" />
     <ClInclude Include="..\Geode.h" />
     <ClInclude Include="..\Group.h" />
-    <ClInclude Include="..\Lines.h" />
     <ClInclude Include="..\main.h" />
     <ClInclude Include="..\MatrixTransform.h" />
     <ClInclude Include="..\Node.h" />
-    <ClInclude Include="..\Points.h" />
+    <ClInclude Include="..\OBJObject.h" />
     <ClInclude Include="..\shader.h" />
     <ClInclude Include="..\Skybox.h" />
     <ClInclude Include="..\Sphere.h" />
     <ClInclude Include="..\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Bezier.cpp" />
+    <ClCompile Include="..\Cube.cpp" />
+    <ClCompile Include="..\Floor.cpp" />
     <ClCompile Include="..\Geode.cpp" />
     <ClCompile Include="..\Group.cpp" />
-    <ClCompile Include="..\Lines.cpp" />
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\MatrixTransform.cpp" />
     <ClCompile Include="..\Node.cpp" />
-    <ClCompile Include="..\Points.cpp" />
+    <ClCompile Include="..\OBJObject.cpp" />
     <ClCompile Include="..\shader.cpp" />
     <ClCompile Include="..\Skybox.cpp" />
     <ClCompile Include="..\Sphere.cpp" />
     <ClCompile Include="..\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\pointshader.frag" />
-    <None Include="..\pointshader.vert" />
     <None Include="..\shader.frag" />
     <None Include="..\shader.vert" />
     <None Include="..\skyboxshader.frag" />

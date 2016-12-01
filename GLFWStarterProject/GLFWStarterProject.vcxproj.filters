@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Vertex Shaders">
+      <UniqueIdentifier>{04449db3-95e7-4b61-8f35-2c6bbc56a964}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fragment Shaders">
+      <UniqueIdentifier>{9be86701-5f00-49e4-8151-b9b293de29a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene Graph Stuff">
+      <UniqueIdentifier>{9f0248b0-aaf6-4120-8ae8-57b7136af1af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Objects">
+      <UniqueIdentifier>{5924ee03-01c4-4bba-a000-5e20df499d6a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\main.h">
@@ -42,13 +54,13 @@
     <ClInclude Include="..\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Bezier.h">
+    <ClInclude Include="..\OBJObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Points.h">
+    <ClInclude Include="..\Cube.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Lines.h">
+    <ClInclude Include="..\Floor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,59 +74,53 @@
     <ClCompile Include="..\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Skybox.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\Group.cpp">
+      <Filter>Source Files\Scene Graph Stuff</Filter>
     </ClCompile>
     <ClCompile Include="..\Geode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Node.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Group.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Scene Graph Stuff</Filter>
     </ClCompile>
     <ClCompile Include="..\MatrixTransform.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Scene Graph Stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Node.cpp">
+      <Filter>Source Files\Scene Graph Stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="..\OBJObject.cpp">
+      <Filter>Source Files\Objects</Filter>
     </ClCompile>
     <ClCompile Include="..\Sphere.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\Bezier.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\Skybox.cpp">
+      <Filter>Source Files\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\Points.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\Cube.cpp">
+      <Filter>Source Files\Objects</Filter>
     </ClCompile>
-    <ClCompile Include="..\Lines.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\Floor.cpp">
+      <Filter>Source Files\Objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shader.frag">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\shader.vert">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="packages.config" />
-    <None Include="..\skyboxshader.frag">
-      <Filter>Source Files</Filter>
+    <None Include="..\shader.vert">
+      <Filter>Vertex Shaders</Filter>
     </None>
     <None Include="..\skyboxshader.vert">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\pointshader.frag">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\pointshader.vert">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\sphereShader.frag">
-      <Filter>Source Files</Filter>
+      <Filter>Vertex Shaders</Filter>
     </None>
     <None Include="..\sphereShader.vert">
-      <Filter>Source Files</Filter>
+      <Filter>Vertex Shaders</Filter>
+    </None>
+    <None Include="..\shader.frag">
+      <Filter>Fragment Shaders</Filter>
+    </None>
+    <None Include="..\skyboxshader.frag">
+      <Filter>Fragment Shaders</Filter>
+    </None>
+    <None Include="..\sphereShader.frag">
+      <Filter>Fragment Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

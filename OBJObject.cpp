@@ -94,9 +94,9 @@ glm::mat4 OBJObject::parse(const char *filepath)
 		{
 			fscanf(fp, "%f/%f/%f %f/%f/%f %f/%f/%f", &x, &xt, &xn, &y, &yt, &yn, &z, &zt, &zn);
 
-			this->indices.push_back(x-1);
-			this->indices.push_back(y-1);
-			this->indices.push_back(z-1);
+			this->indices.push_back((unsigned int)x-1);
+			this->indices.push_back((unsigned int)y-1);
+			this->indices.push_back((unsigned int)z-1);
 		}
 		else {
 			ungetc(c2, fp);
@@ -140,8 +140,8 @@ void OBJObject::draw(GLuint shaderProgram)
 	// Consequently, we need to forward the projection, view, and model matrices to the shader programs
 	// Get the location of the uniform variables "projection" and "modelview"
 
-	uProjection = glGetUniformLocation(Window::shaderProgram, "projection");
-	uModelview = glGetUniformLocation(Window::shaderProgram, "modelview");
+	uProjection = glGetUniformLocation(shaderProgram, "projection");
+	uModelview = glGetUniformLocation(shaderProgram, "modelview");
 
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
@@ -159,7 +159,7 @@ void OBJObject::draw(GLuint shaderProgram)
 	glUniform3f(matSpecularLoc, matSpec.x, matSpec.y, matSpec.z);
 	glUniform1f(matShineLoc, shiny);
 
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(0);
 }
