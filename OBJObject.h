@@ -19,7 +19,7 @@
 class OBJObject
 {
 public:
-	OBJObject(const char* filepath, GLint shaderProgram, glm::vec3 matAmb,
+	OBJObject(const char* filepath, const char *tex_filepath, glm::vec3 matAmb,
 														glm::vec3 matDiff,
 														glm::vec3 matSpec,
 														float shiny);
@@ -27,8 +27,9 @@ public:
 
 	std::vector<unsigned int> indices;
 	std::vector<glm::vec3> vertices;
-
 	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> texCoords;
+
 	glm::mat4 toWorld;
 	glm::mat4 default;
 
@@ -37,8 +38,10 @@ public:
 	glm::vec3 matSpec;
 	float shiny;
 
-	GLuint VBO, VAO, EBO, nVBO;
+	GLuint VBO, VAO, EBO, nVBO, tcVBO;
 	GLuint uProjection, uModelview;
+
+	GLuint textureMap;
 
 	glm::mat4 parse(const char* filepath);
 	void draw(GLuint shaderProgram);

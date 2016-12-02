@@ -74,6 +74,7 @@ void Skybox::draw(GLuint shaderProgram)
 {
 	glUseProgram(shaderProgram);
 	glDepthMask(GL_FALSE);
+	glFrontFace(GL_CW);
 
 	// Calculate the combination of the model and view (camera inverse) matrices
 	glm::mat4 view = glm::mat4(glm::mat3(Window::V));	// Remove any translation component of the view matrix

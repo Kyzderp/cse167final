@@ -2,6 +2,7 @@
 #include "Skybox.h"
 #include <iostream>
 #include "Floor.h"
+#include "OBJObject.h"
 
 using namespace std;
 
@@ -44,6 +45,8 @@ float speed = 0.05f;
 
 Group* root;
 
+OBJObject *banana;
+
 GLFWwindow* windowInstance;
 
 int rmbDown;
@@ -67,6 +70,7 @@ void Window::initialize_objects()
 
 	root = new Group();
 	skybox = new Skybox();
+
 	Window::sphere = new Sphere(0);
 
 	Floor* floor = new Floor();
@@ -81,6 +85,14 @@ void Window::initialize_objects()
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 	skyboxShader = LoadShaders(SKYBOX_VERTEX_SHADER_PATH, SKYBOX_FRAGMENT_SHADER_PATH);
 	sphereShader = LoadShaders(SPHERE_VERTEX_SHADER_PATH, SPHERE_FRAGMENT_SHADER_PATH);
+
+	banana = new OBJObject("../objects/bananaTriangle.obj",
+		"../objects/BananaMark.ppm",
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		32.0f);
+
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
@@ -179,6 +191,7 @@ void Window::display_callback(GLFWwindow* window)
 
 	// Render stuff
 	skybox->draw(skyboxShader);
+	
 	if (sphereCamera)
 	{
 		// from pov of sphere
@@ -193,6 +206,8 @@ void Window::display_callback(GLFWwindow* window)
 		sphere->draw(sphereShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
 	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+
+	banana->draw(shaderProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();

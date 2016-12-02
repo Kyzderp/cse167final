@@ -90,6 +90,7 @@ Floor::~Floor()
 void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 { 
 	//cout << "draw Floor!" << endl;
+	glFrontFace(GL_CW);
 
 	glUseProgram(shaderProgram);
 
