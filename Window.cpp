@@ -86,7 +86,7 @@ void Window::initialize_objects()
 	skyboxShader = LoadShaders(SKYBOX_VERTEX_SHADER_PATH, SKYBOX_FRAGMENT_SHADER_PATH);
 	sphereShader = LoadShaders(SPHERE_VERTEX_SHADER_PATH, SPHERE_FRAGMENT_SHADER_PATH);
 
-	banana = new OBJObject("../objects/bananaTriangle.obj",
+	banana = new OBJObject("../objects/BananaTriangle.obj",
 		"../objects/BananaMark.ppm",
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),

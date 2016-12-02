@@ -141,10 +141,11 @@ void Floor::makeFloor()
 	indices.push_back(3);
 	indices.push_back(0);
 
-	texCoords.push_back(glm::vec2(1.0f, 1.0f));
-	texCoords.push_back(glm::vec2(-1.0f, 1.0f));
-	texCoords.push_back(glm::vec2(-1.0f, -1.0f));
-	texCoords.push_back(glm::vec2(1.0f, -1.0f));
+	float scale = 8.0f;
+	texCoords.push_back(glm::vec2(1.0f, 1.0f) * scale);
+	texCoords.push_back(glm::vec2(-1.0f, 1.0f) * scale);
+	texCoords.push_back(glm::vec2(-1.0f, -1.0f) * scale);
+	texCoords.push_back(glm::vec2(1.0f, -1.0f) * scale);
 }
 
 GLuint Floor::loadTexture(const GLchar* path)
