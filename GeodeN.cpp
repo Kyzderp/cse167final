@@ -1,6 +1,6 @@
-#include "Geode.h"
+#include "GeodeN.h"
 
-Geode::Geode()
+GeodeN::GeodeN()
 {
 	uProjection = glGetUniformLocation(Window::shaderProgram, "projection");
 	uModelview = glGetUniformLocation(Window::shaderProgram, "modelview");
@@ -10,7 +10,7 @@ Geode::Geode()
 	matShineLoc = glGetUniformLocation(Window::shaderProgram, "material.shininess");
 }
 
-Geode::~Geode()
+GeodeN::~GeodeN()
 {
 	// Delete previously generated buffers.
 	glDeleteVertexArrays(1, &VAO);
@@ -19,7 +19,7 @@ Geode::~Geode()
 	glDeleteBuffers(1, &nVBO);
 }
 
-void Geode::draw(glm::mat4 C)
+void GeodeN::draw(glm::mat4 C)
 {
 	//toWorld = C * toWorld;
 

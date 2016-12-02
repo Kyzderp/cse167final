@@ -33,12 +33,9 @@ public:
 	void makeSphere();
 	void makeCircle(int slices, float radius, float z);
 
-	unsigned char* loadPPM(const char* filename, int& width, int& height);
-	GLuint loadCubemap(std::vector<const GLchar*> faces);
-
 	// These variables are needed for the shader program
 	GLuint VBO, VAO, NBO, EBO;
-	GLuint uProjection, uModel, uView;
+	GLuint uProjection, uModelview;
 
 	std::vector<unsigned int> indices;
 	std::vector<glm::vec3> vertices;

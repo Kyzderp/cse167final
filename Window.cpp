@@ -192,7 +192,7 @@ void Window::display_callback(GLFWwindow* window)
 		// default camera
 		sphere->draw(sphereShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
-	root->draw(skyboxShader, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();

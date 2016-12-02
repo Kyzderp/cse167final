@@ -1,13 +1,13 @@
-#ifndef _GEODE_H_
-#define _GEODE_H_
+#ifndef _GeodeN_H_
+#define _GeodeN_H_
 
 #include "node.h"
-#include "../Window.h"
+#include "Window.h"
 
-class Geode : public Node {
+class GeodeN : public Node {
 public:
-	Geode();
-	~Geode();
+	GeodeN();
+	~GeodeN();
 
 	glm::mat4 toWorld = glm::mat4(1.0f);
 

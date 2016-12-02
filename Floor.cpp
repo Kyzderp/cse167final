@@ -18,6 +18,8 @@ Floor::Floor()
 	// Create array object and buffers. Remember to delete your buffers when the object is destroyed!
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &NBO);
+	glGenBuffers(1, &TBO);
 	glGenBuffers(1, &EBO);
 	
 	// Bind the Vertex Array Object (VAO) first, then bind the associated buffers to it.
@@ -39,6 +41,29 @@ Floor::Floor()
 		3 * sizeof(GLfloat), // Offset between consecutive indices. Since each of our vertices have 3 floats, they should have the size of 3 floats in between
 		(GLvoid*)0); // Offset of the first vertex's component. In our case it's 0 since we don't pad the vertices array with anything.
 
+	glBindBuffer(GL_ARRAY_BUFFER, NBO);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * 4 * 3, normals.data(), GL_STATIC_DRAW);
+	// Enable the usage of layout location 0 (check the vertex shader to see what this is)
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1,// This first parameter x should be the same as the number passed into the line "layout (location = x)" in the vertex shader. In this case, it's 0. Valid values are 0 to GL_MAX_UNIFORM_LOCATIONS.
+		3, // This second line tells us how any components there are per vertex. In this case, it's 3 (we have an x, y, and z component)
+		GL_FLOAT, // What type these components are
+		GL_FALSE, // GL_TRUE means the values should be normalized. GL_FALSE means they shouldn't
+		3 * sizeof(GLfloat), // Offset between consecutive indices. Since each of our vertices have 3 floats, they should have the size of 3 floats in between
+		(GLvoid*)0); // Offset of the first vertex's component. In our case it's 0 since we don't pad the vertices array with anything.
+
+	glBindBuffer(GL_ARRAY_BUFFER, TBO);
+	glBufferData(GL_ARRAY_BUFFER, texCoords.size() * 4 * 2, texCoords.data(), GL_STATIC_DRAW);
+	// Enable the usage of layout location 0 (check the vertex shader to see what this is)
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2,// This first parameter x should be the same as the number passed into the line "layout (location = x)" in the vertex shader. In this case, it's 0. Valid values are 0 to GL_MAX_UNIFORM_LOCATIONS.
+		2, // This second line tells us how any components there are per vertex. In this case, it's 3 (we have an x, y, and z component)
+		GL_FLOAT, // What type these components are
+		GL_FALSE, // GL_TRUE means the values should be normalized. GL_FALSE means they shouldn't
+		2 * sizeof(GLfloat), // Offset between consecutive indices. Since each of our vertices have 3 floats, they should have the size of 3 floats in between
+		(GLvoid*)0); // Offset of the first vertex's component. In our case it's 0 since we don't pad the vertices array with anything.
+
+
 	// We've sent the vertex data over to OpenGL, but there's still something missing.
 	// In what order should it draw those vertices? That's why we'll need a GL_ELEMENT_ARRAY_BUFFER for this.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -57,7 +82,9 @@ Floor::~Floor()
 	// large project! This could crash the graphics driver due to memory leaks, or slow down application performance!
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &NBO);
 	glDeleteBuffers(1, &EBO);
+	glDeleteBuffers(1, &TBO);
 }
 
 void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
@@ -73,28 +100,15 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	// Get the location of the uniform variables "projection" and "modelview"
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
 	uModelview = glGetUniformLocation(shaderProgram, "modelview");
-	GLuint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
-	glUniform3f(colorLoc, color.x, color.y, color.z);
 	// Now draw the Floor. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
 
-	glActiveTexture(GL_TEXTURE1);
-	glUniform1i(glGetUniformLocation(shaderProgram, "skybox"), 0);
-	glBindTexture(GL_TEXTURE_RECTANGLE, floorTexture);
-
-	// Make sure no bytes are padded:
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	// Select GL_MODULATE to mix texture with polygon color for shading:
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	// Use bilinear interpolation:
-	glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// Use clamp to edge to hide skybox edges:
-	glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, floorTexture);
 
 	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -114,31 +128,47 @@ void Floor::makeFloor()
 	vertices.push_back(glm::vec3(-size, 0.0f, -size));
 	vertices.push_back(glm::vec3(size, 0.0f, -size));
 
+	normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+	normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+	normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+	normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+
 	indices.push_back(0);
 	indices.push_back(1);
 	indices.push_back(2);
 	indices.push_back(2);
 	indices.push_back(3);
 	indices.push_back(0);
+
+	texCoords.push_back(glm::vec2(1.0f, 1.0f));
+	texCoords.push_back(glm::vec2(-1.0f, 1.0f));
+	texCoords.push_back(glm::vec2(-1.0f, -1.0f));
+	texCoords.push_back(glm::vec2(1.0f, -1.0f));
 }
 
 GLuint Floor::loadTexture(const GLchar* path)
 {
 	GLuint textureID;
 	glGenTextures(1, &textureID);
-	glActiveTexture(GL_TEXTURE1);
+	glActiveTexture(GL_TEXTURE0);
 
 	int width, height;
 	unsigned char* image;
 
-	glBindTexture(GL_TEXTURE_RECTANGLE, textureID);
-		image = Skybox::loadPPM(path, width, height);
-		glTexImage2D(
-			GL_TEXTURE_RECTANGLE, 0,
-			GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image
-		);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	image = Skybox::loadPPM(path, width, height);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0,
+		GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image
+	);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 
-	glBindTexture(GL_TEXTURE_RECTANGLE, 0);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return textureID;
 }
