@@ -235,7 +235,8 @@ void OBJObject::scale(float factor) {
 }
 
 void OBJObject::rotateZ(float deg) {
-	this->toWorld = glm::rotate(glm::mat4(1.0f), deg, glm::vec3(0, 0, 1.0f)) * this->toWorld ;
+	float rad = deg * glm::pi<float>() / 180.0;
+	this->toWorld = glm::rotate(glm::mat4(1.0f), rad, glm::vec3(0, 0, 1.0f)) * this->toWorld ;
 }
 
 void OBJObject::reset() {
