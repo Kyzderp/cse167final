@@ -1,11 +1,11 @@
 #include "Sphere.h"
 #include "Window.h"
 #include <iostream>
-#include "Skybox.h"
+#include "Floor.h"
 
 using namespace std;
 
-GLuint skyboxTexture;
+GLuint sphereTexture;
 
 Sphere::Sphere(int wireframe)
 {
@@ -14,10 +14,13 @@ Sphere::Sphere(int wireframe)
 
 	makeSphere();
 
+	sphereTexture = Floor::loadTexture("../objects/globe.ppm");
+
 	// Create array object and buffers. Remember to delete your buffers when the object is destroyed!
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &NBO);
+	glGenBuffers(1, &TBO);
 	glGenBuffers(1, &EBO);
 	
 	// Bind the Vertex Array Object (VAO) first, then bind the associated buffers to it.
@@ -55,6 +58,17 @@ Sphere::Sphere(int wireframe)
 		3 * sizeof(GLfloat), // Offset between consecutive indices. Since each of our vertices have 3 floats, they should have the size of 3 floats in between
 		(GLvoid*)0); // Offset of the first vertex's component. In our case it's 0 since we don't pad the vertices array with anything.
 
+	glBindBuffer(GL_ARRAY_BUFFER, TBO);
+	glBufferData(GL_ARRAY_BUFFER, texCoords.size() * 4 * 2, texCoords.data(), GL_STATIC_DRAW);
+	// Enable the usage of layout location 0 (check the vertex shader to see what this is)
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2,// This first parameter x should be the same as the number passed into the line "layout (location = x)" in the vertex shader. In this case, it's 0. Valid values are 0 to GL_MAX_UNIFORM_LOCATIONS.
+		2, // This second line tells us how any components there are per vertex. In this case, it's 3 (we have an x, y, and z component)
+		GL_FLOAT, // What type these components are
+		GL_FALSE, // GL_TRUE means the values should be normalized. GL_FALSE means they shouldn't
+		2 * sizeof(GLfloat), // Offset between consecutive indices. Since each of our vertices have 3 floats, they should have the size of 3 floats in between
+		(GLvoid*)0); // Offset of the first vertex's component. In our case it's 0 since we don't pad the vertices array with anything.
+
 	// Unbind the currently bound buffer so that we don't accidentally make unwanted changes to it.
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	// Unbind the VAO now so we don't accidentally tamper with it.
@@ -69,6 +83,7 @@ Sphere::~Sphere()
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &NBO);
+	glDeleteBuffers(1, &TBO);
 	glDeleteBuffers(1, &EBO);
 }
 
@@ -97,20 +112,9 @@ void Sphere::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 cam_pos)
 	// Now draw the Sphere. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
 
+	glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
 	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(shaderProgram, "skybox"), 0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
-
-	// Make sure no bytes are padded:
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	// Select GL_MODULATE to mix texture with polygon color for shading:
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	// Use bilinear interpolation:
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// Use clamp to edge to hide skybox edges:
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, sphereTexture);
 
 	glDrawElements(GL_TRIANGLES, (GLsizei)vertices.size() * 3 * 3, GL_UNSIGNED_INT, 0);
 	// Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
@@ -219,5 +223,8 @@ void Sphere::makeCircle(int slices, float radius, float z)
 
 		normals.push_back(one);
 		normals.push_back(two);
+
+		texCoords.push_back(glm::vec2(one.x / 2 + 0.5, one.y / 2 + 0.5));
+		texCoords.push_back(glm::vec2(two.x / 2 + 0.5, two.y / 2 + 0.5));
 	}
 }

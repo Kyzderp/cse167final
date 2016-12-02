@@ -30,7 +30,7 @@ public:
 	void makeFloor();
 	void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
 	void update();
-	GLuint loadTexture(const GLchar* path);
+	static GLuint loadTexture(const GLchar* path);
 
 	std::vector<unsigned int> indices;
 	std::vector<glm::vec3> vertices;

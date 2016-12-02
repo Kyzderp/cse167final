@@ -198,12 +198,12 @@ void Window::display_callback(GLFWwindow* window)
 		sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -4.0f) + glm::vec3(0.0f, 2.0f, 0.0f));
 		sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
 		Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
-		sphere->draw(sphereShader, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
+		sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
 	}
 	else
 	{
 		// default camera
-		sphere->draw(sphereShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
+		sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
 	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 

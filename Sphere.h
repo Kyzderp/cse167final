@@ -34,12 +34,13 @@ public:
 	void makeCircle(int slices, float radius, float z);
 
 	// These variables are needed for the shader program
-	GLuint VBO, VAO, NBO, EBO;
+	GLuint VBO, VAO, NBO, TBO, EBO;
 	GLuint uProjection, uModelview;
 
 	std::vector<unsigned int> indices;
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> texCoords;
 };
 
 #endif
