@@ -1,8 +1,8 @@
-#include "Sphere.h"
+#include "SphereN.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-Sphere::Sphere(glm::vec3 c, float r, float slice, float stack, float width)
+SphereN::SphereN(glm::vec3 c, float r, float slice, float stack, float width)
 {
 	this->RADIUS = r;
 	this->SLICES = slice;
@@ -82,7 +82,7 @@ Sphere::Sphere(glm::vec3 c, float r, float slice, float stack, float width)
 	glBindVertexArray(0);
 }
 
-void Sphere::render()
+void SphereN::render()
 {
 	glBindVertexArray(VAO);
 
@@ -96,7 +96,7 @@ void Sphere::render()
 	glBindVertexArray(0);
 }
 
-void Sphere::update()
+void SphereN::update()
 {
 
 }

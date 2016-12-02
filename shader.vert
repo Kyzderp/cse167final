@@ -7,6 +7,8 @@
 // The vertex shader gets called once per vertex.
 
 layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 texCoords;
 
 // Uniform variables can be updated by fetching their location and passing values to that location
 uniform mat4 projection;
@@ -16,10 +18,14 @@ uniform mat4 modelview;
 // The default output, gl_Position, should be assigned something. You can define as many
 // extra outputs as you need.
 out vec3 pos;
+out vec3 norm;
+out vec2 tCoords;
 
 void main()
 {
     // OpenGL maintains the D matrix so you only need to multiply by P, V (aka C inverse), and M
     gl_Position = projection * modelview * vec4(position.x, position.y, position.z, 1.0);
 	pos = position;
+	norm = normal;
+	tCoords = texCoords;
 }

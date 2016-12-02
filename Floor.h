@@ -34,9 +34,11 @@ public:
 
 	std::vector<unsigned int> indices;
 	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> texCoords;
 
 	// These variables are needed for the shader program
-	GLuint VBO, VAO, EBO;
+	GLuint VBO, VAO, NBO, TBO, EBO;
 	GLuint uProjection, uModelview;
 };
 

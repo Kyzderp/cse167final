@@ -1,12 +1,13 @@
 // Nicholas Deagon A11583792
 
 #include "OBJObject.h"
+#include "Skybox.h"
 #include "Window.h"
 #include <algorithm>
 
 using namespace std;
 
-OBJObject::OBJObject(const char *filepath, GLint shaderProgram, glm::vec3 matAmb,
+OBJObject::OBJObject(const char *filepath, const char *tex_filepath, glm::vec3 matAmb,
 																glm::vec3 matDiff,
 																glm::vec3 matSpec,
 																float shiny)
@@ -14,11 +15,26 @@ OBJObject::OBJObject(const char *filepath, GLint shaderProgram, glm::vec3 matAmb
 	this->default = parse(filepath);
 	this->toWorld = default;
 
+	glGenTextures(1, &textureMap);
+	int width, height;
+	unsigned char* image;
+
+	image = Skybox::loadPPM(tex_filepath, width, height);
+	glBindTexture(GL_TEXTURE_2D, textureMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+
+
 	glGenVertexArrays(1, &VAO);
 
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &nVBO);
 	glGenBuffers(1, &EBO);
+	glGenBuffers(1, &tcVBO);
 
 	glBindVertexArray(VAO);
 
@@ -31,6 +47,11 @@ OBJObject::OBJObject(const char *filepath, GLint shaderProgram, glm::vec3 matAmb
 	glBufferData(GL_ARRAY_BUFFER, normals.size() * 3 * 4, normals.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, tcVBO);
+	glBufferData(GL_ARRAY_BUFFER, texCoords.size() * 2 * 4, texCoords.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*4, indices.data(), GL_STATIC_DRAW);
@@ -74,8 +95,6 @@ glm::mat4 OBJObject::parse(const char *filepath)
 			fscanf(fp, "%f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
 			glm::vec3 v = glm::vec3(x, y, z);
 
-			//float vecLength = glm::length(v);
-			//if (vecLength > maxLength) maxLength = vecLength;
 			if (x > maxX) maxX = x;
 			if (x < minX) minX = x;
 			if (y > maxY) maxY = y;
@@ -90,6 +109,12 @@ glm::mat4 OBJObject::parse(const char *filepath)
 			fscanf(fp, "%f %f %f", &x, &y, &z);
 			this->normals.push_back(glm::vec3(x, y, z));
 		}
+		else if ((c1 == 'v') && (c2 == 't'))
+		{
+			fscanf(fp, "%f %f", &x, &y);
+			this->texCoords.push_back(glm::vec2(x, y));
+		}
+
 		else if ((c1 == 'f') && (c2 == ' '))
 		{
 			fscanf(fp, "%f/%f/%f %f/%f/%f %f/%f/%f", &x, &xt, &xn, &y, &yt, &yn, &z, &zt, &zn);
@@ -111,15 +136,12 @@ glm::mat4 OBJObject::parse(const char *filepath)
 
 	maxLength = max( max( maxX - minX, maxY - minY ), maxZ - minZ );
 	
-	//glm::mat4 toOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(-avgX, -avgY, -avgZ));
-	//glm::mat4 to2x2x2 = glm::scale(glm::mat4(1.0f), glm::vec3(1.0 / maxLength));
-
 	for (int i = 0; i < vertices.size(); i++) {
 		vertices[i].x = (vertices[i].x - avgX) / maxLength;
 		vertices[i].y = (vertices[i].y - avgY) / maxLength;
 		vertices[i].z = (vertices[i].z - avgZ) / maxLength;
 	}
-	//return to2x2x2 * toOrigin;
+
 	return glm::mat4(1.0f);
 }
 
@@ -130,6 +152,7 @@ OBJObject::~OBJObject()
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &nVBO);
+	glDeleteBuffers(1, &tcVBO);
 }
 
 void OBJObject::draw(GLuint shaderProgram)
@@ -146,10 +169,14 @@ void OBJObject::draw(GLuint shaderProgram)
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureMap);
+
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
 
-// material shit
+
 	GLint matAmbientLoc = glGetUniformLocation(shaderProgram, "material.ambient");
 	GLint matDiffuseLoc = glGetUniformLocation(shaderProgram, "material.diffuse");
 	GLint matSpecularLoc = glGetUniformLocation(shaderProgram, "material.specular");

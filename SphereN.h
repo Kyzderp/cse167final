@@ -1,11 +1,12 @@
-#ifndef _SPHERE_H_
-#define _SPHERE_H_
+#ifndef _SPHEREN_H_
+#define _SPHEREN_H_
 
 #include "Geode.h"
+#include <vector>
 
-class Sphere : public Geode {
+class SphereN : public Geode {
 public:
-	Sphere(glm::vec3 c, float r, float slice, float stack, float width);
+	SphereN(glm::vec3 c, float r, float slice, float stack, float width);
 
 	glm::vec3 color;
 	glm::vec3 colorSpec;

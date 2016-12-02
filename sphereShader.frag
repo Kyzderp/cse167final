@@ -9,14 +9,7 @@ in vec3 norm;
 // You can output many things. The first vec4 type output determines the color of the fragment
 out vec4 color;
 
-uniform vec3 cameraPos;
-uniform samplerCube skybox;
-
 void main()
 {
-    vec3 I = normalize(pos - cameraPos);
-    vec3 R = reflect(I, normalize(norm));
-	//color = vec4(1.0, 1.0, 1.0, 1.0);
-    //color = texture(skybox, R);
-	color = texture(skybox, R);
+	color = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }

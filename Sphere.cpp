@@ -14,15 +14,6 @@ Sphere::Sphere(int wireframe)
 
 	makeSphere();
 
-	vector<const GLchar*> faces;
-	faces.push_back("skybox/mudskipper_rt.ppm");
-	faces.push_back("skybox/mudskipper_lf.ppm");
-	faces.push_back("skybox/mudskipper_up.ppm");
-	faces.push_back("skybox/mudskipper_dn.ppm");
-	faces.push_back("skybox/mudskipper_bk.ppm");
-	faces.push_back("skybox/mudskipper_ft.ppm");
-	skyboxTexture = loadCubemap(faces);
-
 	// Create array object and buffers. Remember to delete your buffers when the object is destroyed!
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -77,6 +68,7 @@ Sphere::~Sphere()
 	// large project! This could crash the graphics driver due to memory leaks, or slow down application performance!
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &NBO);
 	glDeleteBuffers(1, &EBO);
 }
 
@@ -87,20 +79,21 @@ void Sphere::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 cam_pos)
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
 
+	glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f);
+
 	// Calculate the combination of the model and view (camera inverse) matrices
-	glm::mat4 model = C * toWorld;
+	glm::mat4 modelview = Window::V * C * toWorld;
 	// We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
 	// Consequently, we need to forward the projection, view, and model matrices to the shader programs
 	// Get the location of the uniform variables "projection" and "modelview"
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
-	uModel = glGetUniformLocation(shaderProgram, "model");
-	uView = glGetUniformLocation(shaderProgram, "view");
-	GLuint camLoc = glGetUniformLocation(shaderProgram, "cameraPos");
+	uModelview = glGetUniformLocation(shaderProgram, "modelview");
+	GLuint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
-	glUniformMatrix4fv(uModel, 1, GL_FALSE, &model[0][0]);
-	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
-	glUniform3f(camLoc, cam_pos.x, cam_pos.y, cam_pos.z);
+	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
+	glUniform3f(colorLoc, color.x, color.y, color.z);
+
 	// Now draw the Sphere. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
 
@@ -227,84 +220,4 @@ void Sphere::makeCircle(int slices, float radius, float z)
 		normals.push_back(one);
 		normals.push_back(two);
 	}
-}
-
-GLuint Sphere::loadCubemap(vector<const GLchar*> faces)
-{
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-	glActiveTexture(GL_TEXTURE0);
-
-	int width, height;
-	unsigned char* image;
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-	for (GLuint i = 0; i < faces.size(); i++)
-	{
-		image = loadPPM(faces[i], width, height);
-		glTexImage2D(
-			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
-			GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image
-		);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-	return textureID;
-}
-
-unsigned char* Sphere::loadPPM(const char* filename, int& width, int& height)
-{
-	const int BUFSIZE = 128;
-	FILE* fp;
-	unsigned int read;
-	unsigned char* rawData;
-	char buf[3][BUFSIZE];
-	char* retval_fgets;
-	size_t retval_sscanf;
-
-	if ((fp = fopen(filename, "rb")) == NULL)
-	{
-		std::cerr << "error reading ppm file, could not locate " << filename << std::endl;
-		width = 0;
-		height = 0;
-		return NULL;
-	}
-
-	// Read magic number:
-	retval_fgets = fgets(buf[0], BUFSIZE, fp);
-
-	// Read width and height:
-	do
-	{
-		retval_fgets = fgets(buf[0], BUFSIZE, fp);
-	} while (buf[0][0] == '#');
-	retval_sscanf = sscanf(buf[0], "%s %s", buf[1], buf[2]);
-	width = atoi(buf[1]);
-	height = atoi(buf[2]);
-
-	// Read maxval:
-	do
-	{
-		retval_fgets = fgets(buf[0], BUFSIZE, fp);
-	} while (buf[0][0] == '#');
-
-	// Read image data:
-	rawData = new unsigned char[width * height * 3];
-	read = (unsigned int)fread(rawData, width * height * 3, 1, fp);
-	fclose(fp);
-	if (read != 1)
-	{
-		std::cerr << "error parsing ppm file, incomplete data" << std::endl;
-		delete[] rawData;
-		width = 0;
-		height = 0;
-		return NULL;
-	}
-
-	return rawData;
 }
