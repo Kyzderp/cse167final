@@ -27,7 +27,9 @@ public:
 
 	std::vector<unsigned int> indices;
 	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec3> temp_vertices;
 	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> temp_texCoords;
 	std::vector<glm::vec2> texCoords;
 
 	glm::mat4 toWorld;
