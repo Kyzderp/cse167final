@@ -157,6 +157,8 @@ OBJObject::~OBJObject()
 
 void OBJObject::draw(GLuint shaderProgram)
 {
+	glFrontFace(GL_CCW);
+
 	// Calculate the combination of the model and view (camera inverse) matrices
 	glm::mat4 modelview = Window::V * this->toWorld;
 	// We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)

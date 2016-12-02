@@ -90,6 +90,7 @@ Floor::~Floor()
 void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 { 
 	//cout << "draw Floor!" << endl;
+	glFrontFace(GL_CW);
 
 	glUseProgram(shaderProgram);
 
@@ -151,6 +152,7 @@ GLuint Floor::loadTexture(const GLchar* path)
 	GLuint textureID;
 	glGenTextures(1, &textureID);
 	glActiveTexture(GL_TEXTURE0);
+
 
 	int width, height;
 	unsigned char* image;
