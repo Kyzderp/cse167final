@@ -30,6 +30,7 @@
     <ClInclude Include="..\shader.h" />
     <ClInclude Include="..\Skybox.h" />
     <ClInclude Include="..\Sphere.h" />
+    <ClInclude Include="..\SphereN.h" />
     <ClInclude Include="..\Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -44,6 +45,7 @@
     <ClCompile Include="..\shader.cpp" />
     <ClCompile Include="..\Skybox.cpp" />
     <ClCompile Include="..\Sphere.cpp" />
+    <ClCompile Include="..\SphereN.cpp" />
     <ClCompile Include="..\Window.cpp" />
   </ItemGroup>
   <ItemGroup>

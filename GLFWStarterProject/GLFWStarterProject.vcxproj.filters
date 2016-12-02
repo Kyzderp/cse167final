@@ -63,6 +63,9 @@
     <ClInclude Include="..\Floor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\SphereN.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp">
@@ -99,6 +102,9 @@
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
     <ClCompile Include="..\Floor.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SphereN.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
   </ItemGroup>
