@@ -153,7 +153,6 @@ GLuint Floor::loadTexture(const GLchar* path)
 	glGenTextures(1, &textureID);
 	glActiveTexture(GL_TEXTURE0);
 
-
 	int width, height;
 	unsigned char* image;
 
