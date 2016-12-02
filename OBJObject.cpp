@@ -74,6 +74,7 @@ glm::mat4 OBJObject::parse(const char *filepath)
 	float xt, yt, zt;
 	float r, g, b;
 	int c1, c2;
+	unsigned int i = 0;
 
 	float maxLength = 0.0f;
 	float maxX = -1000.0f;
@@ -102,7 +103,7 @@ glm::mat4 OBJObject::parse(const char *filepath)
 			if (z > maxZ) maxZ = z;
 			if (z < minZ) minZ = z;
 			
-			this->vertices.push_back(v);
+			this->temp_vertices.push_back(v);
 		}
 		else if ((c1 == 'v') && (c2 == 'n')) 
 		{
@@ -112,16 +113,30 @@ glm::mat4 OBJObject::parse(const char *filepath)
 		else if ((c1 == 'v') && (c2 == 't'))
 		{
 			fscanf(fp, "%f %f", &x, &y);
-			this->texCoords.push_back(glm::vec2(x, y));
+			this->temp_texCoords.push_back(glm::vec2(x, y));
 		}
 
 		else if ((c1 == 'f') && (c2 == ' '))
 		{
 			fscanf(fp, "%f/%f/%f %f/%f/%f %f/%f/%f", &x, &xt, &xn, &y, &yt, &yn, &z, &zt, &zn);
 
-			this->indices.push_back((unsigned int)x-1);
-			this->indices.push_back((unsigned int)y-1);
-			this->indices.push_back((unsigned int)z-1);
+			//this->indices.push_back((unsigned int)x-1);
+			//this->indices.push_back((unsigned int)y-1);
+			//this->indices.push_back((unsigned int)z-1);
+
+			this->indices.push_back(i++);
+			this->indices.push_back(i++);
+			this->indices.push_back(i++);
+
+			this->texCoords.push_back(temp_texCoords[(unsigned int)xt - 1]);
+			this->texCoords.push_back(temp_texCoords[(unsigned int)yt - 1]);
+			this->texCoords.push_back(temp_texCoords[(unsigned int)zt - 1]);
+
+			this->vertices.push_back(temp_vertices[(unsigned int)x - 1]);
+			this->vertices.push_back(temp_vertices[(unsigned int)y - 1]);
+			this->vertices.push_back(temp_vertices[(unsigned int)z - 1]);
+
+
 		}
 		else {
 			ungetc(c2, fp);
