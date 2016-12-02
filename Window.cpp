@@ -93,6 +93,10 @@ void Window::initialize_objects()
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		32.0f);
 
+	banana->rotate(glm::vec3(0, 0, 1.0f), 180.0f);
+	banana->move(glm::vec3(0, 5.0f, 0));
+	banana->scale(10.0f);
+
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
