@@ -260,3 +260,6 @@ xcuserdata/
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint
+
+GLFWStarterProject.VC.db
+
