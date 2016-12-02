@@ -3,6 +3,8 @@
 #include <iostream>
 #include "Floor.h"
 #include "OBJObject.h"
+#include "GLFWStarterProject/include/irrKlang.h"
+
 
 using namespace std;
 
@@ -59,6 +61,8 @@ glm::vec3 prevPoint;
 
 int paused;
 
+using namespace irrklang;
+
 void Window::initialize_objects()
 {
 	paused = 0;
@@ -67,6 +71,9 @@ void Window::initialize_objects()
 	click = 0;
 	prevX = 0;
 	prevY = 0;
+
+	ISoundEngine* se = createIrrKlangDevice();
+	se->play2D("../audio/breakout.mp3", GL_TRUE);
 
 	root = new Group();
 	skybox = new Skybox();
