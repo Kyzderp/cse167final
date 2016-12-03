@@ -13,6 +13,7 @@
 #define GLM_FORCE_RADIANS
 #endif
 #include "Geode.h"
+#include "Block.h"
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
@@ -30,8 +31,7 @@ public:
 	void makeFloor();
 	void makeRoads();
 	void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
-	void drawRoads(glm::mat4 C, glm::vec3 color);
-	void update();
+	void drawRoads(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
 	static GLuint loadTexture(const GLchar* path);
 
 	std::vector<unsigned int> indices;
@@ -41,6 +41,8 @@ public:
 
 	std::vector<glm::vec3> roadVertices;
 	std::vector<unsigned int> roadIndices;
+
+	std::vector<Block*> blocks;
 
 	// These variables are needed for the shader program
 	GLuint VBO, VAO, NBO, TBO, EBO;

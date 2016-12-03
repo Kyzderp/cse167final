@@ -110,6 +110,7 @@ Floor::~Floor()
 
 	glDeleteVertexArrays(1, &roadVAO);
 	glDeleteBuffers(1, &roadVBO);
+	glDeleteBuffers(1, &roadEBO);
 }
 
 void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
@@ -126,9 +127,13 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	// Get the location of the uniform variables "projection" and "modelview"
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
 	uModelview = glGetUniformLocation(shaderProgram, "modelview");
+
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
+
+	GLuint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
+	glUniform3f(colorLoc, color.x, color.y, color.z);
 	// Now draw the Floor. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
 
@@ -141,30 +146,32 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	// Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
 	glBindVertexArray(0);
 
-	drawRoads(C, color);
+	// Draw roads
+	drawRoads(Window::solidShader, C, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	// Draw blocks
+	for (int i = 0; i < blocks.size(); i++)
+		blocks[i]->draw(Window::solidShader, C, glm::vec3(0.5f, 0.5f, 0.5f));
 }
 
-void Floor::drawRoads(glm::mat4 C, glm::vec3 color)
+void Floor::drawRoads(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 {
-	glUseProgram(Window::solidShader);
+	glUseProgram(shaderProgram);
 
 	// Calculate the combination of the model and view (camera inverse) matrices
 	glm::mat4 modelview = Window::V * C * toWorld;
 	uProjection = glGetUniformLocation(Window::solidShader, "projection");
 	uModelview = glGetUniformLocation(Window::solidShader, "modelview");
-
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
+
+	GLuint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
+	glUniform3f(colorLoc, color.x, color.y, color.z);
 
 	glBindVertexArray(roadVAO);
 	glDrawElements(GL_LINES, (GLsizei)roadIndices.size(), GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(0);
-}
-
-void Floor::update()
-{
-	
 }
 
 void Floor::makeFloor()
@@ -202,8 +209,8 @@ void Floor::makeRoads()
 	float xdist = size * 2.0f / xn;
 	float zdist = size * 2.0f / zn;
 
-	float xvar = xdist / 10.0f;
-	float zvar = zdist / 10.0f;
+	float xvar = xdist / 5.0f;
+	float zvar = zdist / 5.0f;
 
 	for (int x = 0; x < xn + 1; x++)
 	{
@@ -218,6 +225,7 @@ void Floor::makeRoads()
 		}
 	}
 
+	// Line indices in one direction
 	for (int z = 0; z < zn + 1; z++)
 	{
 		for (int x = 1; x < xn + 1; x++)
@@ -228,6 +236,7 @@ void Floor::makeRoads()
 		}
 	}
 
+	// Other direction
 	for (int x = 0; x < xn + 1; x++)
 	{
 		for (int z = 1; z < zn + 1; z++)
@@ -237,6 +246,23 @@ void Floor::makeRoads()
 			cout << z - 1 + x * (zn + 1) << " " << z + x * (zn + 1) << endl;
 		}
 	}
+
+	// Now the blocks
+	for (int x = 0; x < xn; x++)
+	{
+		for (int z = 0; z < zn; z++)
+		{
+			// take down left as "origin"
+			int dl = (x * (zn + 1)) + z;
+			int dr = dl + 1;
+			int ul = dl + zn + 1;
+			int ur = ul + 1;
+
+			blocks.push_back(new Block(roadVertices[dl], roadVertices[dr], roadVertices[ul], roadVertices[ur]));
+		}
+	}
+
+	
 }
 
 GLuint Floor::loadTexture(const GLchar* path)
