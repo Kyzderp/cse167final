@@ -8,12 +8,34 @@ GLuint floorTexture;
 
 Floor::Floor()
 {
+	// Google API key, but this seems too hard to use AIzaSyBesNtg7B1lJXiXAB1COwRSNawtzO5uVwU
+
 	toWorld = glm::mat4(1.0f);
 	size = 50.0f;
 
 	makeFloor();
 
 	floorTexture = loadTexture("../objects/asphalt.ppm");
+
+	// Array object and buffers for road lines (debug purposes?)
+	glGenVertexArrays(1, &roadVAO);
+	glGenBuffers(1, &roadVBO);
+	glGenBuffers(1, &roadEBO);
+
+	glBindVertexArray(roadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, roadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(roadVertices) * 4 * 4, roadVertices.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roadEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(roadIndices) * 4 * 4, roadIndices.data(), GL_STATIC_DRAW);
+	cout << "sizeof(roadIndices)" << sizeof(roadIndices) << endl;
+
+	// Unbind
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 
 	// Create array object and buffers. Remember to delete your buffers when the object is destroyed!
 	glGenVertexArrays(1, &VAO);
@@ -85,6 +107,9 @@ Floor::~Floor()
 	glDeleteBuffers(1, &NBO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &TBO);
+
+	glDeleteVertexArrays(1, &roadVAO);
+	glDeleteBuffers(1, &roadVBO);
 }
 
 void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
@@ -114,6 +139,26 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	// Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
+	glBindVertexArray(0);
+
+	drawRoads(C, color);
+}
+
+void Floor::drawRoads(glm::mat4 C, glm::vec3 color)
+{
+	glUseProgram(Window::solidShader);
+
+	// Calculate the combination of the model and view (camera inverse) matrices
+	glm::mat4 modelview = Window::V * C * toWorld;
+	uProjection = glGetUniformLocation(Window::solidShader, "projection");
+	uModelview = glGetUniformLocation(Window::solidShader, "modelview");
+
+	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
+
+	glBindVertexArray(roadVAO);
+	glDrawElements(GL_LINES, (GLsizei)roadIndices.size(), GL_UNSIGNED_INT, 0);
+
 	glBindVertexArray(0);
 }
 
@@ -146,6 +191,52 @@ void Floor::makeFloor()
 	texCoords.push_back(glm::vec2(-1.0f, 1.0f) * scale);
 	texCoords.push_back(glm::vec2(-1.0f, -1.0f) * scale);
 	texCoords.push_back(glm::vec2(1.0f, -1.0f) * scale);
+
+	makeRoads();
+}
+
+void Floor::makeRoads()
+{
+	int xn = 4;
+	int zn = 4;
+	float xdist = size * 2.0f / xn;
+	float zdist = size * 2.0f / zn;
+
+	float xvar = xdist / 10.0f;
+	float zvar = zdist / 10.0f;
+
+	for (int x = 0; x < xn + 1; x++)
+	{
+		for (int z = 0; z < zn + 1; z++)
+		{
+			float xCoord = -size + x * xdist;
+			xCoord += xvar * ((float)rand() / (float)RAND_MAX) * 2 - xvar;
+			float zCoord = -size + z * zdist;
+			zCoord += zvar * ((float)rand() / (float)RAND_MAX) * 2 - zvar;
+			roadVertices.push_back(glm::vec3(xCoord, 0.01f, zCoord));
+			cout << "vertex: " << xCoord << " " << zCoord << endl;
+		}
+	}
+
+	for (int z = 0; z < zn + 1; z++)
+	{
+		for (int x = 1; x < xn + 1; x++)
+		{
+			roadIndices.push_back((x - 1) * (zn + 1) + z);
+			roadIndices.push_back(x * (zn + 1) + z);
+			cout << (x - 1) * (zn + 1) + z << " " << x * (zn + 1) + z << endl;
+		}
+	}
+
+	for (int x = 0; x < xn + 1; x++)
+	{
+		for (int z = 1; z < zn + 1; z++)
+		{
+			roadIndices.push_back(z - 1 + x * (zn + 1));
+			roadIndices.push_back(z + x * (zn + 1));
+			cout << z - 1 + x * (zn + 1) << " " << z + x * (zn + 1) << endl;
+		}
+	}
 }
 
 GLuint Floor::loadTexture(const GLchar* path)

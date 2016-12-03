@@ -28,7 +28,9 @@ public:
 	float size;
 
 	void makeFloor();
+	void makeRoads();
 	void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
+	void drawRoads(glm::mat4 C, glm::vec3 color);
 	void update();
 	static GLuint loadTexture(const GLchar* path);
 
@@ -37,9 +39,14 @@ public:
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> texCoords;
 
+	std::vector<glm::vec3> roadVertices;
+	std::vector<unsigned int> roadIndices;
+
 	// These variables are needed for the shader program
 	GLuint VBO, VAO, NBO, TBO, EBO;
 	GLuint uProjection, uModelview;
+
+	GLuint roadVAO, roadVBO, roadEBO;
 };
 
 #endif

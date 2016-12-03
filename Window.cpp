@@ -8,6 +8,7 @@ using namespace std;
 
 const char* window_title = "GLFW Starter Project";
 Skybox* skybox;
+GLint Window::solidShader;
 GLint shaderProgram;
 GLint skyboxShader;
 GLint sphereShader;
@@ -19,6 +20,8 @@ GLint sphereShader;
 #define SKYBOX_FRAGMENT_SHADER_PATH "../skyboxshader.frag"
 #define SPHERE_VERTEX_SHADER_PATH "../sphereShader.vert"
 #define SPHERE_FRAGMENT_SHADER_PATH "../sphereShader.frag"
+#define SOLID_VERTEX_SHADER_PATH "../solidShader.vert"
+#define SOLID_FRAGMENT_SHADER_PATH "../solidShader.frag"
 
 // Default camera parameters
 glm::vec3 cam_pos(0.0f, 5.0f, 20.0f);		// e  | Position of camera
@@ -85,6 +88,7 @@ void Window::initialize_objects()
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 	skyboxShader = LoadShaders(SKYBOX_VERTEX_SHADER_PATH, SKYBOX_FRAGMENT_SHADER_PATH);
 	sphereShader = LoadShaders(SPHERE_VERTEX_SHADER_PATH, SPHERE_FRAGMENT_SHADER_PATH);
+	Window::solidShader = LoadShaders(SOLID_VERTEX_SHADER_PATH, SOLID_FRAGMENT_SHADER_PATH);
 
 	banana = new OBJObject("../objects/BananaTriangle.obj",
 		"../objects/BananaMark.ppm",
@@ -109,6 +113,7 @@ void Window::clean_up()
 	glDeleteProgram(shaderProgram);
 	glDeleteProgram(skyboxShader);
 	glDeleteProgram(sphereShader);
+	glDeleteProgram(Window::solidShader);
 }
 
 GLFWwindow* Window::create_window(int width, int height)

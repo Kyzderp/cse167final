@@ -173,6 +173,7 @@ OBJObject::~OBJObject()
 void OBJObject::draw(GLuint shaderProgram)
 {
 	glFrontFace(GL_CCW);
+	glUseProgram(shaderProgram);
 
 	// Calculate the combination of the model and view (camera inverse) matrices
 	glm::mat4 modelview = Window::V * this->toWorld;
@@ -235,7 +236,7 @@ void OBJObject::scale(float factor) {
 }
 
 void OBJObject::rotateZ(float deg) {
-	float rad = deg * glm::pi<float>() / 180.0;
+	float rad = deg * glm::pi<float>() / 180.0f;
 	this->toWorld = glm::rotate(glm::mat4(1.0f), rad, glm::vec3(0, 0, 1.0f)) * this->toWorld ;
 }
 

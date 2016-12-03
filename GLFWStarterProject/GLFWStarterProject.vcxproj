@@ -51,6 +51,8 @@
     <None Include="..\shader.vert" />
     <None Include="..\skyboxshader.frag" />
     <None Include="..\skyboxshader.vert" />
+    <None Include="..\solidShader.frag" />
+    <None Include="..\solidShader.vert" />
     <None Include="..\sphereShader.frag" />
     <None Include="..\sphereShader.vert" />
     <None Include="packages.config" />

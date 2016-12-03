@@ -122,5 +122,11 @@
     <None Include="..\sphereShader.frag">
       <Filter>Fragment Shaders</Filter>
     </None>
+    <None Include="..\solidShader.frag">
+      <Filter>Fragment Shaders</Filter>
+    </None>
+    <None Include="..\solidShader.vert">
+      <Filter>Vertex Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

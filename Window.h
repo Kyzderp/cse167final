@@ -27,6 +27,8 @@ public:
 	static Sphere* sphere; // A horrible sphere
 	static Group* track;
 
+	static GLint solidShader;
+
 	static void initialize_objects();
 	static void clean_up();
 	static GLFWwindow* create_window(int width, int height);
