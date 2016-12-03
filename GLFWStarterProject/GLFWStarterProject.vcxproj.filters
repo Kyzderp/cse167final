@@ -63,6 +63,9 @@
     <ClInclude Include="..\Floor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Block.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp">
@@ -101,6 +104,9 @@
     <ClCompile Include="..\Floor.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="..\Block.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -121,6 +127,12 @@
     </None>
     <None Include="..\sphereShader.frag">
       <Filter>Fragment Shaders</Filter>
+    </None>
+    <None Include="..\solidShader.frag">
+      <Filter>Fragment Shaders</Filter>
+    </None>
+    <None Include="..\solidShader.vert">
+      <Filter>Vertex Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>
