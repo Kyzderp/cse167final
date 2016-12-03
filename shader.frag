@@ -17,4 +17,5 @@ void main()
     // Color everything a hot pink color. An alpha of 1.0f means it is not transparent.
     color = texture(tex, tCoords);
 	//color = vec4(1.0f, 1.0f, 0.0f, 1.0f);
+	//color = vec4(1.0f, norm);
 }

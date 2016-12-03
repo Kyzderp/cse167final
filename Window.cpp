@@ -73,7 +73,7 @@ void Window::initialize_objects()
 	prevY = 0;
 
 	ISoundEngine* se = createIrrKlangDevice();
-	se->play2D("../audio/breakout.mp3", GL_TRUE);
+	//se->play2D("../audio/breakout.mp3", GL_TRUE);
 
 	root = new Group();
 	skybox = new Skybox();
@@ -93,8 +93,9 @@ void Window::initialize_objects()
 	skyboxShader = LoadShaders(SKYBOX_VERTEX_SHADER_PATH, SKYBOX_FRAGMENT_SHADER_PATH);
 	sphereShader = LoadShaders(SPHERE_VERTEX_SHADER_PATH, SPHERE_FRAGMENT_SHADER_PATH);
 
-	banana = new OBJObject("../objects/BananaTriangle.obj",
-		"../objects/BananaMark.ppm",
+	banana = new OBJObject("../objects/OrangeTriangle.obj",
+		//"../objects/BananaMark.ppm",
+		"../objects/Orange_Color.ppm",
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),
@@ -216,7 +217,7 @@ void Window::display_callback(GLFWwindow* window)
 		// default camera
 		sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
-	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
 	banana->draw(shaderProgram);
 

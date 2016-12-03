@@ -93,7 +93,7 @@ glm::mat4 OBJObject::parse(const char *filepath)
 		c2 = fgetc(fp);
 		if ((c1 == 'v') && (c2 == ' '))
 		{
-			fscanf(fp, "%f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
+			fscanf(fp, "%f %f %f", &x, &y, &z);
 			glm::vec3 v = glm::vec3(x, y, z);
 
 			if (x > maxX) maxX = x;
@@ -132,6 +132,8 @@ glm::mat4 OBJObject::parse(const char *filepath)
 			this->texCoords.push_back(temp_texCoords[(unsigned int)yt - 1]);
 			this->texCoords.push_back(temp_texCoords[(unsigned int)zt - 1]);
 
+			printf("texCoords: %f/%f/%f\n", xt, yt, zt);
+
 			this->vertices.push_back(temp_vertices[(unsigned int)x - 1]);
 			this->vertices.push_back(temp_vertices[(unsigned int)y - 1]);
 			this->vertices.push_back(temp_vertices[(unsigned int)z - 1]);
@@ -151,11 +153,11 @@ glm::mat4 OBJObject::parse(const char *filepath)
 
 	maxLength = max( max( maxX - minX, maxY - minY ), maxZ - minZ );
 	
-	for (int i = 0; i < vertices.size(); i++) {
-		vertices[i].x = (vertices[i].x - avgX) / maxLength;
-		vertices[i].y = (vertices[i].y - avgY) / maxLength;
-		vertices[i].z = (vertices[i].z - avgZ) / maxLength;
-	}
+	//for (int i = 0; i < vertices.size(); i++) {
+	//	vertices[i].x = (vertices[i].x - avgX) / maxLength;
+	//	vertices[i].y = (vertices[i].y - avgY) / maxLength;
+	//	vertices[i].z = (vertices[i].z - avgZ) / maxLength;
+	//}
 
 	return glm::mat4(1.0f);
 }
