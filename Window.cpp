@@ -97,9 +97,9 @@ void Window::initialize_objects()
 	sphereShader = LoadShaders(SPHERE_VERTEX_SHADER_PATH, SPHERE_FRAGMENT_SHADER_PATH);
 	Window::solidShader = LoadShaders(SOLID_VERTEX_SHADER_PATH, SOLID_FRAGMENT_SHADER_PATH);
 
-	banana = new OBJObject("../objects/OrangeTriangle.obj",
-		//"../objects/BananaMark.ppm",
-		"../objects/Orange_Color.ppm",
+	banana = new OBJObject("../objects/BananaTriangle.obj",
+		"../objects/BananaMark.ppm",
+		//"../objects/Orange_Color.ppm",
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),
@@ -206,8 +206,20 @@ void Window::display_callback(GLFWwindow* window)
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Render stuff
+	// Render skybox
 	skybox->draw(skyboxShader);
+
+	// now render objects
+	glUseProgram(shaderProgram);
+
+	// set camera position (uniform is set below)
+	GLint viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
+
+	// Set up light(s)
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.ambient"), 0.2f, 0.2f, 0.2f);
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.6f, 0.6f, 0.6f);
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.7f, 0.7f, 0.7f);
 	
 	if (sphereCamera)
 	{
@@ -215,14 +227,18 @@ void Window::display_callback(GLFWwindow* window)
 		sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -4.0f) + glm::vec3(0.0f, 2.0f, 0.0f));
 		sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
 		Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
+		glUniform3f(viewPosLoc, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
+
 		sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
 	}
 	else
 	{
 		// default camera
+		glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
+
 		sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
-	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
 	banana->draw(shaderProgram);
 

@@ -76,6 +76,10 @@ glm::mat4 OBJObject::parse(const char *filepath)
 	int c1, c2;
 	unsigned int i = 0;
 
+	std::vector<glm::vec3> temp_vertices;
+	std::vector<glm::vec3> temp_normals;
+	std::vector<glm::vec2> temp_texCoords;
+
 	float maxLength = 0.0f;
 	float maxX = -1000.0f;
 	float minX = 1000.0f;
@@ -103,17 +107,17 @@ glm::mat4 OBJObject::parse(const char *filepath)
 			if (z > maxZ) maxZ = z;
 			if (z < minZ) minZ = z;
 			
-			this->temp_vertices.push_back(v);
+			temp_vertices.push_back(v);
 		}
 		else if ((c1 == 'v') && (c2 == 'n')) 
 		{
 			fscanf(fp, "%f %f %f", &x, &y, &z);
-			this->normals.push_back(glm::vec3(x, y, z));
+			temp_normals.push_back(glm::vec3(x, y, z));
 		}
 		else if ((c1 == 'v') && (c2 == 't'))
 		{
 			fscanf(fp, "%f %f", &x, &y);
-			this->temp_texCoords.push_back(glm::vec2(x, y));
+			temp_texCoords.push_back(glm::vec2(x, y));
 		}
 
 		else if ((c1 == 'f') && (c2 == ' '))
@@ -132,13 +136,13 @@ glm::mat4 OBJObject::parse(const char *filepath)
 			this->texCoords.push_back(temp_texCoords[(unsigned int)yt - 1]);
 			this->texCoords.push_back(temp_texCoords[(unsigned int)zt - 1]);
 
-			printf("texCoords: %f/%f/%f\n", xt, yt, zt);
+			this->normals.push_back(temp_normals[(unsigned int)xn - 1]);
+			this->normals.push_back(temp_normals[(unsigned int)yn - 1]);
+			this->normals.push_back(temp_normals[(unsigned int)zn - 1]);
 
 			this->vertices.push_back(temp_vertices[(unsigned int)x - 1]);
 			this->vertices.push_back(temp_vertices[(unsigned int)y - 1]);
 			this->vertices.push_back(temp_vertices[(unsigned int)z - 1]);
-
-
 		}
 		else {
 			ungetc(c2, fp);
@@ -149,7 +153,6 @@ glm::mat4 OBJObject::parse(const char *filepath)
 	float avgX = (maxX + minX) / 2.0f;
 	float avgY = (maxY + minY) / 2.0f;
 	float avgZ = (maxZ + minZ) / 2.0f;
-
 
 	maxLength = max( max( maxX - minX, maxY - minY ), maxZ - minZ );
 	
@@ -197,13 +200,13 @@ void OBJObject::draw(GLuint shaderProgram)
 	glBindVertexArray(VAO);
 
 
-	GLint matAmbientLoc = glGetUniformLocation(shaderProgram, "material.ambient");
-	GLint matDiffuseLoc = glGetUniformLocation(shaderProgram, "material.diffuse");
-	GLint matSpecularLoc = glGetUniformLocation(shaderProgram, "material.specular");
-	GLint matShineLoc = glGetUniformLocation(shaderProgram, "material.shininess");
-	glUniform3f(matAmbientLoc, matAmb.x, matAmb.y, matAmb.z);
-	glUniform3f(matDiffuseLoc, matDiff.x, matDiff.y, matDiff.z);
-	glUniform3f(matSpecularLoc, matSpec.x, matSpec.y, matSpec.z);
+	//GLint matAmbientLoc = glGetUniformLocation(shaderProgram, "material.ambient");
+	//GLint matDiffuseLoc = glGetUniformLocation(shaderProgram, "material.diffuse");
+	//GLint matSpecularLoc = glGetUniformLocation(shaderProgram, "material.specular");
+	GLint matShineLoc = glGetUniformLocation(shaderProgram, "matShininess");
+	//glUniform3f(matAmbientLoc, matAmb.x, matAmb.y, matAmb.z);
+	//glUniform3f(matDiffuseLoc, matDiff.x, matDiff.y, matDiff.z);
+	//glUniform3f(matSpecularLoc, matSpec.x, matSpec.y, matSpec.z);
 	glUniform1f(matShineLoc, shiny);
 
 	glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
