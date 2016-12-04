@@ -66,6 +66,9 @@
     <ClInclude Include="..\Block.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\BumpOBJ.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp">
@@ -107,6 +110,9 @@
     <ClCompile Include="..\Block.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
+    <ClCompile Include="BumpOBJ.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -116,16 +122,10 @@
     <None Include="..\skyboxshader.vert">
       <Filter>Vertex Shaders</Filter>
     </None>
-    <None Include="..\sphereShader.vert">
-      <Filter>Vertex Shaders</Filter>
-    </None>
     <None Include="..\shader.frag">
       <Filter>Fragment Shaders</Filter>
     </None>
     <None Include="..\skyboxshader.frag">
-      <Filter>Fragment Shaders</Filter>
-    </None>
-    <None Include="..\sphereShader.frag">
       <Filter>Fragment Shaders</Filter>
     </None>
     <None Include="..\solidShader.frag">
@@ -133,6 +133,12 @@
     </None>
     <None Include="..\solidShader.vert">
       <Filter>Vertex Shaders</Filter>
+    </None>
+    <None Include="..\bumpShader.vert">
+      <Filter>Vertex Shaders</Filter>
+    </None>
+    <None Include="..\bumpShader.frag">
+      <Filter>Fragment Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -1,5 +1,3 @@
-// Nicholas Deagon A11583792
-
 #include "OBJObject.h"
 #include "Skybox.h"
 #include "Window.h"
@@ -15,19 +13,7 @@ OBJObject::OBJObject(const char *filepath, const char *tex_filepath, glm::vec3 m
 	this->default = parse(filepath);
 	this->toWorld = default;
 
-	glGenTextures(1, &textureMap);
-	int width, height;
-	unsigned char* image;
-
-	image = Skybox::loadPPM(tex_filepath, width, height);
-	glBindTexture(GL_TEXTURE_2D, textureMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-
+	textureMap = loadTexture(tex_filepath);
 
 	glGenVertexArrays(1, &VAO);
 
@@ -72,7 +58,6 @@ glm::mat4 OBJObject::parse(const char *filepath)
 	float x, y, z;
 	float xn, yn, zn;
 	float xt, yt, zt;
-	float r, g, b;
 	int c1, c2;
 	unsigned int i = 0;
 
@@ -80,13 +65,6 @@ glm::mat4 OBJObject::parse(const char *filepath)
 	std::vector<glm::vec3> temp_normals;
 	std::vector<glm::vec2> temp_texCoords;
 
-	float maxLength = 0.0f;
-	float maxX = -1000.0f;
-	float minX = 1000.0f;
-	float maxY = -1000.0f;
-	float minY = 1000.0f;
-	float maxZ = -1000.0f;
-	float minZ = 1000.0f;
 
 	fp = fopen(filepath, "rb");
 	if (fp == NULL) { cerr << "error loading file" << endl; }  // just in case the file can't be found or is corrupt
@@ -99,13 +77,6 @@ glm::mat4 OBJObject::parse(const char *filepath)
 		{
 			fscanf(fp, "%f %f %f", &x, &y, &z);
 			glm::vec3 v = glm::vec3(x, y, z);
-
-			if (x > maxX) maxX = x;
-			if (x < minX) minX = x;
-			if (y > maxY) maxY = y;
-			if (y < minY) minY = y;
-			if (z > maxZ) maxZ = z;
-			if (z < minZ) minZ = z;
 			
 			temp_vertices.push_back(v);
 		}
@@ -124,10 +95,7 @@ glm::mat4 OBJObject::parse(const char *filepath)
 		{
 			fscanf(fp, "%f/%f/%f %f/%f/%f %f/%f/%f", &x, &xt, &xn, &y, &yt, &yn, &z, &zt, &zn);
 
-			//this->indices.push_back((unsigned int)x-1);
-			//this->indices.push_back((unsigned int)y-1);
-			//this->indices.push_back((unsigned int)z-1);
-
+			// Because we have to use indices?
 			this->indices.push_back(i++);
 			this->indices.push_back(i++);
 			this->indices.push_back(i++);
@@ -150,18 +118,6 @@ glm::mat4 OBJObject::parse(const char *filepath)
 	}
 	fclose(fp);
 
-	float avgX = (maxX + minX) / 2.0f;
-	float avgY = (maxY + minY) / 2.0f;
-	float avgZ = (maxZ + minZ) / 2.0f;
-
-	maxLength = max( max( maxX - minX, maxY - minY ), maxZ - minZ );
-	
-	//for (int i = 0; i < vertices.size(); i++) {
-	//	vertices[i].x = (vertices[i].x - avgX) / maxLength;
-	//	vertices[i].y = (vertices[i].y - avgY) / maxLength;
-	//	vertices[i].z = (vertices[i].z - avgZ) / maxLength;
-	//}
-
 	return glm::mat4(1.0f);
 }
 
@@ -175,16 +131,13 @@ OBJObject::~OBJObject()
 	glDeleteBuffers(1, &tcVBO);
 }
 
-void OBJObject::draw(GLuint shaderProgram)
+void OBJObject::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 {
 	glFrontFace(GL_CCW);
 	glUseProgram(shaderProgram);
 
 	// Calculate the combination of the model and view (camera inverse) matrices
 	glm::mat4 modelview = Window::V * this->toWorld;
-	// We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
-	// Consequently, we need to forward the projection, view, and model matrices to the shader programs
-	// Get the location of the uniform variables "projection" and "modelview"
 
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
 	uModelview = glGetUniformLocation(shaderProgram, "modelview");
@@ -199,14 +152,7 @@ void OBJObject::draw(GLuint shaderProgram)
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
 
-
-	//GLint matAmbientLoc = glGetUniformLocation(shaderProgram, "material.ambient");
-	//GLint matDiffuseLoc = glGetUniformLocation(shaderProgram, "material.diffuse");
-	//GLint matSpecularLoc = glGetUniformLocation(shaderProgram, "material.specular");
 	GLint matShineLoc = glGetUniformLocation(shaderProgram, "matShininess");
-	//glUniform3f(matAmbientLoc, matAmb.x, matAmb.y, matAmb.z);
-	//glUniform3f(matDiffuseLoc, matDiff.x, matDiff.y, matDiff.z);
-	//glUniform3f(matSpecularLoc, matSpec.x, matSpec.y, matSpec.z);
 	glUniform1f(matShineLoc, shiny);
 
 	glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
@@ -216,14 +162,11 @@ void OBJObject::draw(GLuint shaderProgram)
 
 void OBJObject::update()
 {
-	//spin(0.01f);
+
 }
 
 void OBJObject::spin(float deg)
 {
-	//this->angle += deg;
-	//if (this->angle > 360.0f || this->angle < -360.0f) this->angle = 0.0f;
-	// This creates the matrix to rotate the cube
 	this->toWorld *= glm::rotate(glm::mat4(1.0f), deg, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
@@ -247,4 +190,30 @@ void OBJObject::rotateZ(float deg) {
 
 void OBJObject::reset() {
 	this->toWorld = default;
+}
+
+GLuint OBJObject::loadTexture(const GLchar* path)
+{
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glActiveTexture(GL_TEXTURE0);
+
+	int width, height;
+	unsigned char* image;
+
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	image = Skybox::loadPPM(path, width, height);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0,
+		GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image
+	);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return textureID;
 }

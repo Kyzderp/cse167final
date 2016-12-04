@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Floor.h"
 #include "OBJObject.h"
+#include "BumpOBJ.h"
 #include "GLFWStarterProject/include/irrKlang.h"
 
 
@@ -13,15 +14,18 @@ Skybox* skybox;
 GLint Window::solidShader;
 GLint shaderProgram;
 GLint skyboxShader;
-GLint sphereShader;
+GLint bumpShader;
+
+GLint viewPosLoc;
+GLint viewPosbump;
 
 // On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH "../shader.vert"
 #define FRAGMENT_SHADER_PATH "../shader.frag"
 #define SKYBOX_VERTEX_SHADER_PATH "../skyboxshader.vert"
 #define SKYBOX_FRAGMENT_SHADER_PATH "../skyboxshader.frag"
-#define SPHERE_VERTEX_SHADER_PATH "../sphereShader.vert"
-#define SPHERE_FRAGMENT_SHADER_PATH "../sphereShader.frag"
+#define SPHERE_VERTEX_SHADER_PATH "../bumpShader.vert"
+#define SPHERE_FRAGMENT_SHADER_PATH "../bumpShader.frag"
 #define SOLID_VERTEX_SHADER_PATH "../solidShader.vert"
 #define SOLID_FRAGMENT_SHADER_PATH "../solidShader.frag"
 
@@ -51,6 +55,7 @@ float speed = 0.05f;
 Group* root;
 
 OBJObject *banana;
+BumpOBJ *orange;
 
 GLFWwindow* windowInstance;
 
@@ -94,19 +99,36 @@ void Window::initialize_objects()
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 	skyboxShader = LoadShaders(SKYBOX_VERTEX_SHADER_PATH, SKYBOX_FRAGMENT_SHADER_PATH);
-	sphereShader = LoadShaders(SPHERE_VERTEX_SHADER_PATH, SPHERE_FRAGMENT_SHADER_PATH);
+	bumpShader = LoadShaders(SPHERE_VERTEX_SHADER_PATH, SPHERE_FRAGMENT_SHADER_PATH);
 	Window::solidShader = LoadShaders(SOLID_VERTEX_SHADER_PATH, SOLID_FRAGMENT_SHADER_PATH);
 
-	banana = new OBJObject("../objects/orange_lower_poly.obj",
+	viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
+	viewPosbump = glGetUniformLocation(bumpShader, "viewPos");
+
+
+	banana = new OBJObject("../objects/BananaTriangle.obj",
+		"../objects/BananaMark.ppm",
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		32.0f);
+
+	glUseProgram(bumpShader);
+
+	orange = new BumpOBJ("../objects/orange_lower_poly.obj",
 		"../objects/Orange_Color.ppm",
+		"../objects/Orange_Normal.ppm",
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		32.0f);
 
 	banana->rotate(glm::vec3(0, 0, 1.0f), 180.0f);
-	banana->move(glm::vec3(0, 5.0f, 0));
+	banana->move(glm::vec3(12.0f, 5.0f, 0));
 	banana->scale(10.0f);
+
+	orange->move(glm::vec3(0, 5.0f, 0.0f));
+	orange->scale(8.0f);
 
 }
 
@@ -116,10 +138,12 @@ void Window::clean_up()
 	delete(Window::sphere);
 	delete(skybox);
 	delete(root);
+	delete(banana);
+	delete(orange);
 
 	glDeleteProgram(shaderProgram);
 	glDeleteProgram(skyboxShader);
-	glDeleteProgram(sphereShader);
+	glDeleteProgram(bumpShader);
 	glDeleteProgram(Window::solidShader);
 }
 
@@ -211,9 +235,6 @@ void Window::display_callback(GLFWwindow* window)
 	// now render objects
 	glUseProgram(shaderProgram);
 
-	// set camera position (uniform is set below)
-	GLint viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
-
 	// Set up light(s)
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.ambient"), 0.2f, 0.2f, 0.2f);
@@ -227,6 +248,7 @@ void Window::display_callback(GLFWwindow* window)
 		sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
 		Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
 		glUniform3f(viewPosLoc, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
+		glUniform3f(viewPosbump, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 
 		sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
 	}
@@ -234,12 +256,24 @@ void Window::display_callback(GLFWwindow* window)
 	{
 		// default camera
 		glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
-
 		sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
+
 	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
-	banana->draw(shaderProgram);
+	banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+	//orange->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+
+	// Draw orange
+	glUseProgram(bumpShader);
+	glUniform3f(viewPosbump, cam_pos.x, cam_pos.y, cam_pos.z);
+
+	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
+	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.ambient"), 0.2f, 0.2f, 0.2f);
+	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.diffuse"), 0.6f, 0.6f, 0.6f);
+	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.specular"), 0.7f, 0.7f, 0.7f);
+
+	orange->draw(bumpShader, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();

@@ -15,8 +15,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <iostream>
+#include "Geode.h"
 
-class OBJObject
+
+class OBJObject : public Geode
 {
 public:
 	OBJObject(const char* filepath, const char *tex_filepath, glm::vec3 matAmb,
@@ -45,7 +47,7 @@ public:
 	GLuint textureMap;
 
 	glm::mat4 parse(const char* filepath);
-	void draw(GLuint shaderProgram);
+	void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
 	void update();
 	void spin(float deg);
 	void move(glm::vec3 movementVec);
@@ -53,6 +55,7 @@ public:
 	void rotateZ(float deg);
 	void reset();
 	void rotate(glm::vec3 axis, float deg);
+	GLuint loadTexture(const GLchar * path);
 };
 
 #endif

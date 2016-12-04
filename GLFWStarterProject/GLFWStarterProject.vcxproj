@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Block.h" />
+    <ClInclude Include="..\BumpOBJ.h" />
     <ClInclude Include="..\Cube.h" />
     <ClInclude Include="..\Floor.h" />
     <ClInclude Include="..\Geode.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="..\Skybox.cpp" />
     <ClCompile Include="..\Sphere.cpp" />
     <ClCompile Include="..\Window.cpp" />
+    <ClCompile Include="BumpOBJ.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shader.frag" />
@@ -55,8 +57,8 @@
     <None Include="..\skyboxshader.vert" />
     <None Include="..\solidShader.frag" />
     <None Include="..\solidShader.vert" />
-    <None Include="..\sphereShader.frag" />
-    <None Include="..\sphereShader.vert" />
+    <None Include="..\bumpShader.frag" />
+    <None Include="..\bumpShader.vert" />
     <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

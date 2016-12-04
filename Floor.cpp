@@ -286,7 +286,6 @@ GLuint Floor::loadTexture(const GLchar* path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 
-
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return textureID;
