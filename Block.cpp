@@ -136,4 +136,66 @@ void Block::makeBlock()
 		// "Back" vertices
 		{ -2.0, -2.0, -2.0 },{ 2.0, -2.0, -2.0 },{ 2.0,  2.0, -2.0 },{ -2.0,  2.0, -2.0 }
 	};*/
+
+	makeBuildings();
+}
+
+void Block::makeBuildings()
+{
+	float width = glm::min(
+		glm::min(glm::length(np - nn), glm::length(np - pp)), 
+		glm::min(glm::length(pn - pp), glm::length(pn - nn))
+	);
+	width = width * 0.4;
+
+	glm::vec3 inner_nn = nn + glm::normalize((np - nn) + (pn - nn)) * width;
+	glm::vec3 inner_pn = pn + glm::normalize((nn - pn) + (pp - pn)) * width;
+	glm::vec3 inner_np = np + glm::normalize((nn - np) + (pp - np)) * width;
+	glm::vec3 inner_pp = pp + glm::normalize((np - pp) + (pn - pp)) * width;
+
+	// This is really bad
+
+	// bottom
+	glm::vec3 left_n = nn + glm::normalize(pn - nn) * width;
+	glm::vec3 right_n = pn + glm::normalize(nn - pn) * width;
+
+	// left
+	glm::vec3 n_down = nn + glm::normalize(np - nn) * width;
+	glm::vec3 n_up = np + glm::normalize(nn - np) * width;
+
+	// right
+	glm::vec3 p_down = pn + glm::normalize(pp - pn) * width;
+	glm::vec3 p_up = pp + glm::normalize(pn - pp) * width;
+
+	// top
+	glm::vec3 left_p = np + glm::normalize(pp - np) * width;
+	glm::vec3 right_p = pp + glm::normalize(np - pp) * width;
+
+
+	// top left
+	Window::buildings->addPoints(np, left_p, n_up, inner_np);
+
+	// top mid
+	Window::buildings->addPoints(left_p, right_p, inner_np, inner_pp);
+
+	// top right
+	Window::buildings->addPoints(right_p, pp, inner_pp, p_up);
+
+	// mid left
+	Window::buildings->addPoints(n_up, inner_np, n_down, inner_nn);
+
+	// mid mid
+	Window::buildings->addPoints(inner_np, inner_pp, inner_nn, inner_pn);
+
+	// mid right
+	Window::buildings->addPoints(inner_pp, p_up, inner_pn, p_down);
+
+	// bottom left
+	Window::buildings->addPoints(n_down, inner_nn, nn, left_n);
+
+	// bottom mid
+	Window::buildings->addPoints(inner_nn, inner_pn, left_n, right_n);
+
+	// bottom right
+	Window::buildings->addPoints(inner_pn, p_down, right_n, pn);
 }

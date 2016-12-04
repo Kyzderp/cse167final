@@ -46,9 +46,10 @@ glm::mat4 Window::V;
 Sphere* Window::sphere;
 glm::vec3 spherePos;
 glm::vec4 sphereDir;
-float speed = 0.05f;
+float speed = 0.1f;
 
 Group* root;
+QuadPrism* Window::buildings;
 
 OBJObject *banana;
 
@@ -82,9 +83,11 @@ void Window::initialize_objects()
 	skybox = new Skybox();
 
 	Window::sphere = new Sphere(0);
+	buildings = new QuadPrism();
 
 	Floor* floor = new Floor();
 	root->addChild(floor);
+	
 
 	spherePos = glm::vec3(0.0f, 1.0f, 0.0f);
 	sphereDir = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
@@ -116,6 +119,7 @@ void Window::clean_up()
 	delete(Window::sphere);
 	delete(skybox);
 	delete(root);
+	delete(buildings);
 
 	glDeleteProgram(shaderProgram);
 	glDeleteProgram(skyboxShader);
