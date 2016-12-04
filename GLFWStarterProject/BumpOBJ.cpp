@@ -11,7 +11,6 @@ BumpOBJ::BumpOBJ(const char *filepath, const char *tex_filepath, const char *nor
 	// load normal texture map
 	normalMap = loadTexture(normal_filepath);
 
-
 	// now just run the extra code to generate tangent vectors
 	for (unsigned int i = 0; i < indices.size(); i += 3) {
 		glm::vec3 v0 = vertices[indices[i]];
@@ -28,28 +27,19 @@ BumpOBJ::BumpOBJ(const char *filepath, const char *tex_filepath, const char *nor
 
 		float f = 1.0f / (DeltaU1 * DeltaV2 - DeltaU2 * DeltaV1);
 
-		glm::vec3 Tangent, Bitangent;
+		glm::vec3 Tangent;
 
 		Tangent.x = f * (DeltaV2 * Edge1.x - DeltaV1 * Edge2.x);
 		Tangent.y = f * (DeltaV2 * Edge1.y - DeltaV1 * Edge2.y);
 		Tangent.z = f * (DeltaV2 * Edge1.z - DeltaV1 * Edge2.z);
 
-		Bitangent.x = f * (-DeltaU2 * Edge1.x - DeltaU1 * Edge2.x);
-		Bitangent.y = f * (-DeltaU2 * Edge1.y - DeltaU1 * Edge2.y);
-		Bitangent.z = f * (-DeltaU2 * Edge1.z - DeltaU1 * Edge2.z);
-
 		tangents.push_back(glm::normalize(Tangent));
 		tangents.push_back(glm::normalize(Tangent)); 
 		tangents.push_back(glm::normalize(Tangent));
-
-		biTangents.push_back(glm::normalize(Bitangent));
-		biTangents.push_back(glm::normalize(Bitangent));
-		biTangents.push_back(glm::normalize(Bitangent));
 	}
 
 	// Now bind the tangent and bitangent buffers
 	glGenBuffers(1, &tangentBO);
-	glGenBuffers(1, &biTangentBO);
 
 	glBindVertexArray(VAO);
 
@@ -57,11 +47,6 @@ BumpOBJ::BumpOBJ(const char *filepath, const char *tex_filepath, const char *nor
 	glBufferData(GL_ARRAY_BUFFER, tangents.size() * 3 * 4, tangents.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, biTangentBO);
-	glBufferData(GL_ARRAY_BUFFER, biTangents.size() * 3 * 4, biTangents.data(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -72,7 +57,6 @@ BumpOBJ::BumpOBJ(const char *filepath, const char *tex_filepath, const char *nor
 BumpOBJ::~BumpOBJ()
 {
 	glDeleteBuffers(1, &tangentBO);
-	glDeleteBuffers(1, &biTangentBO);
 }
 
 void BumpOBJ::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
@@ -83,6 +67,9 @@ void BumpOBJ::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	// Calculate the combination of the model and view (camera inverse) matrices
 	glm::mat4 modelview = Window::V * this->toWorld;
 
+	glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
+	glUniform1i(glGetUniformLocation(shaderProgram, "normalMap"), 1);
+
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
 	uModelview = glGetUniformLocation(shaderProgram, "modelview");
 
@@ -92,8 +79,9 @@ void BumpOBJ::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureMap);
-	//glActiveTexture(GL_TEXTURE1);
-	//glBindTexture(GL_TEXTURE_2D, normalMap);
+
+	glActiveTexture(GL_TEXTURE1);
+  	glBindTexture(GL_TEXTURE_2D, normalMap);
 
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);

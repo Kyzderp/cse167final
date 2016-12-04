@@ -14,7 +14,7 @@ Sphere::Sphere(int wireframe)
 
 	makeSphere();
 
-	sphereTexture = Floor::loadTexture("../objects/orange.ppm");
+	//sphereTexture = Floor::loadTexture("../objects/orange.ppm");
 
 	// Create array object and buffers. Remember to delete your buffers when the object is destroyed!
 	glGenVertexArrays(1, &VAO);

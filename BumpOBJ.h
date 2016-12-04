@@ -14,10 +14,8 @@ public:
 	~BumpOBJ();
 
 	std::vector<glm::vec3> tangents;
-	std::vector<glm::vec3> biTangents;
 
 	GLuint tangentBO;
-	GLuint biTangentBO;
 
 	GLuint normalMap;
 

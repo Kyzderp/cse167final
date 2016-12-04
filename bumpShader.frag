@@ -11,7 +11,6 @@ in vec3 FragPos;
 in vec3 norm;
 in vec2 tCoords;
 in vec3 Tangent;
-in vec3 Bitangent0;
 
 // For the object
 uniform sampler2D tex;

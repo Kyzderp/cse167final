@@ -240,7 +240,7 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.ambient"), 0.2f, 0.2f, 0.2f);
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.6f, 0.6f, 0.6f);
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.7f, 0.7f, 0.7f);
-	
+
 	if (sphereCamera)
 	{
 		// from pov of sphere
