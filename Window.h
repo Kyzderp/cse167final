@@ -14,6 +14,7 @@
 #include "Humanoid.h"
 #include "shader.h"
 #include "Skybox.h"
+#include "QuadPrism.h"
 
 class Window
 {
@@ -25,7 +26,7 @@ public:
 
 	static GLuint skyboxTexture;
 	static Sphere* sphere; // A horrible sphere
-	static Group* track;
+	static QuadPrism* buildings;
 
 	static GLint solidShader;
 

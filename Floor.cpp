@@ -150,8 +150,11 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	drawRoads(Window::solidShader, C, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	// Draw blocks
-	for (int i = 0; i < blocks.size(); i++)
-		blocks[i]->draw(Window::solidShader, C, glm::vec3(0.5f, 0.5f, 0.5f));
+	/*for (int i = 0; i < blocks.size(); i++)
+		blocks[i]->draw(Window::solidShader, C, glm::vec3(0.5f, 0.5f, 0.5f));*/
+
+	// Draw buildings
+	Window::buildings->draw(Window::solidShader, C, glm::vec3(0.7f, 0.7f, 0.7f));
 }
 
 void Floor::drawRoads(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
@@ -221,7 +224,6 @@ void Floor::makeRoads()
 			float zCoord = -size + z * zdist;
 			zCoord += zvar * ((float)rand() / (float)RAND_MAX) * 2 - zvar;
 			roadVertices.push_back(glm::vec3(xCoord, 0.01f, zCoord));
-			cout << "vertex: " << xCoord << " " << zCoord << endl;
 		}
 	}
 
@@ -232,7 +234,6 @@ void Floor::makeRoads()
 		{
 			roadIndices.push_back((x - 1) * (zn + 1) + z);
 			roadIndices.push_back(x * (zn + 1) + z);
-			cout << (x - 1) * (zn + 1) + z << " " << x * (zn + 1) + z << endl;
 		}
 	}
 
@@ -243,7 +244,6 @@ void Floor::makeRoads()
 		{
 			roadIndices.push_back(z - 1 + x * (zn + 1));
 			roadIndices.push_back(z + x * (zn + 1));
-			cout << z - 1 + x * (zn + 1) << " " << z + x * (zn + 1) << endl;
 		}
 	}
 
@@ -262,7 +262,7 @@ void Floor::makeRoads()
 		}
 	}
 
-	
+	Window::buildings->makeBuffers();
 }
 
 GLuint Floor::loadTexture(const GLchar* path)
