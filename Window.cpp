@@ -97,9 +97,8 @@ void Window::initialize_objects()
 	sphereShader = LoadShaders(SPHERE_VERTEX_SHADER_PATH, SPHERE_FRAGMENT_SHADER_PATH);
 	Window::solidShader = LoadShaders(SOLID_VERTEX_SHADER_PATH, SOLID_FRAGMENT_SHADER_PATH);
 
-	banana = new OBJObject("../objects/BananaTriangle.obj",
-		"../objects/BananaMark.ppm",
-		//"../objects/Orange_Color.ppm",
+	banana = new OBJObject("../objects/orange_lower_poly.obj",
+		"../objects/Orange_Color.ppm",
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),

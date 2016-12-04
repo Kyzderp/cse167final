@@ -117,7 +117,7 @@ glm::mat4 OBJObject::parse(const char *filepath)
 		else if ((c1 == 'v') && (c2 == 't'))
 		{
 			fscanf(fp, "%f %f", &x, &y);
-			temp_texCoords.push_back(glm::vec2(x, y));
+			temp_texCoords.push_back(glm::vec2(x, 1.0f - y)); // had to invert for blender exports?
 		}
 
 		else if ((c1 == 'f') && (c2 == ' '))
