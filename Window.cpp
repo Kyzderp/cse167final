@@ -50,6 +50,7 @@ glm::mat4 Window::V;
 Sphere* Window::sphere;
 glm::vec3 spherePos;
 glm::vec4 sphereDir;
+glm::vec4 orangeSpinAxis(1.0f,0,0,0);
 float speed = 0.1f;
 
 Group* root;
@@ -108,7 +109,6 @@ void Window::initialize_objects()
 	viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
 	viewPosbump = glGetUniformLocation(bumpShader, "viewPos");
 
-
 	banana = new OBJObject("../objects/BananaTriangle.obj",
 		"../objects/BananaMark.ppm",
 		glm::vec3(1.0f, 1.0f, 0.0f),
@@ -130,8 +130,8 @@ void Window::initialize_objects()
 	banana->move(glm::vec3(12.0f, 5.0f, 0));
 	banana->scale(10.0f);
 
-	orange->move(glm::vec3(0, 5.0f, 0.0f));
-	orange->scale(8.0f);
+	//orange->move(glm::vec3(0, 5.0f, 0.0f));
+	//orange->scale(8.0f);
 
 }
 
@@ -222,13 +222,20 @@ void Window::idle_callback()
 void Window::display_callback(GLFWwindow* window)
 {
 	// I'm putting these here because if I put it in key callback it's very slow and weird to control
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		sphereDir = glm::rotate(glm::mat4(1.0f), 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
-	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		sphereDir = glm::rotate(glm::mat4(1.0f), -5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		sphereDir = glm::rotate(glm::mat4(1.0f), speed * 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+	//	orangeSpinAxis = glm::rotate(glm::mat4(1.0f), speed * 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * orangeSpinAxis;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		sphereDir = glm::rotate(glm::mat4(1.0f), speed * -5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+		//orangeSpinAxis = glm::rotate(glm::mat4(1.0f), speed * 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * orangeSpinAxis;
+	}
 
 	// move
-	spherePos = spherePos + glm::vec3(sphereDir) * speed;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		spherePos = spherePos + glm::vec3(sphereDir) * speed * 0.1f;
+		//orange->rotate(glm::vec3(orangeSpinAxis), 0.1f); // HANNAH HERE!!!
+	}
 
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -254,19 +261,21 @@ void Window::display_callback(GLFWwindow* window)
 		glUniform3f(viewPosLoc, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 		glUniform3f(viewPosbump, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 
-		sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
+		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
+		orange->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
 	}
 	else
 	{
 		// default camera
 		glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
-		sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
+		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
+		orange->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
+
 	}
 
 	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
-	banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
-	//orange->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	// Draw orange
 	glUseProgram(bumpShader);
@@ -277,7 +286,7 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.diffuse"), 0.6f, 0.6f, 0.6f);
 	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.specular"), 0.7f, 0.7f, 0.7f);
 
-	orange->draw(bumpShader, glm::mat4(1.0f), glm::vec3(1.0f));
+	//orange->draw(bumpShader, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();

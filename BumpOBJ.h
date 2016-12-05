@@ -18,6 +18,7 @@ public:
 	GLuint tangentBO;
 
 	GLuint normalMap;
+	GLuint dispMap;
 
 	void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
 

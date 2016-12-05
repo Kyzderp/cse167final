@@ -18,9 +18,9 @@ void main()
     gl_Position = projection * modelview * vec4(position.x, position.y, position.z, 1.0);
 
 	// once/if we add a modelview for objects
-	//FragPos = vec3(modelview * vec4(position, 1.0f));
+	FragPos = vec3(modelview * vec4(position, 1.0f));
 
-	FragPos = position;
+	//FragPos = position;
 	norm = normal;
 	tCoords = texCoords;
 
