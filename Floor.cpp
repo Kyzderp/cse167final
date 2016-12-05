@@ -232,8 +232,11 @@ void Floor::makeRoads()
 	{
 		for (int x = 1; x < xn + 1; x++)
 		{
-			roadIndices.push_back((x - 1) * (zn + 1) + z);
-			roadIndices.push_back(x * (zn + 1) + z);
+			int idx1 = (x - 1) * (zn + 1) + z;
+			int idx2 = x * (zn + 1) + z;
+
+			roadIndices.push_back(idx1);
+			roadIndices.push_back(idx2);
 		}
 	}
 
