@@ -1,6 +1,8 @@
 #include "Floor.h"
 #include "Window.h"
 #include <iostream>
+#include <stdlib.h> 
+#include <ctime>
 
 using namespace std;
 
@@ -150,8 +152,8 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	drawRoads(Window::solidShader, C, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	// Draw blocks
-	/*for (int i = 0; i < blocks.size(); i++)
-		blocks[i]->draw(Window::solidShader, C, glm::vec3(0.5f, 0.5f, 0.5f));*/
+	for (int i = 0; i < blocks.size(); i++)
+		blocks[i]->draw(Window::solidShader, C, glm::vec3(0.5f, 0.5f, 0.5f));
 
 	// Draw buildings
 	Window::buildings->draw(Window::solidShader, C, glm::vec3(0.7f, 0.7f, 0.7f));
@@ -251,6 +253,10 @@ void Floor::makeRoads()
 	}
 
 	// Now the blocks
+	// Select one for park
+	srand(time(NULL));
+	int parkX = rand() % xn;
+	int parkZ = rand() % zn;
 	for (int x = 0; x < xn; x++)
 	{
 		for (int z = 0; z < zn; z++)
@@ -261,7 +267,10 @@ void Floor::makeRoads()
 			int ul = dl + zn + 1;
 			int ur = ul + 1;
 
-			blocks.push_back(new Block(roadVertices[dl], roadVertices[dr], roadVertices[ul], roadVertices[ur]));
+			int park = 0;
+			if (z == parkZ && x == parkX)
+				park = 1;
+			blocks.push_back(new Block(roadVertices[dl], roadVertices[dr], roadVertices[ul], roadVertices[ur], park));
 		}
 	}
 

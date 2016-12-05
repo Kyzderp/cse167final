@@ -6,8 +6,9 @@ using namespace std;
 
 GLuint BlockTexture;
 
-Block::Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four)
+Block::Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four, int isPark)
 {
+	this->isPark = isPark;
 	toWorld = glm::mat4(1.0f);
 
 	// Figure out which one is most negative, most positive, etc
@@ -21,6 +22,9 @@ Block::Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four)
 	assignVertex(four, center);
 
 	makeBlock();
+
+	if (!isPark)
+		makeBuildings();
 
 	// Create array object and buffers. Remember to delete your buffers when the object is destroyed!
 	glGenVertexArrays(1, &VAO);
@@ -37,14 +41,14 @@ Block::Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four)
 	// glBufferData populates the most recently bound buffer with data starting at the 3rd argument and ending after
 	// the 2nd argument number of indices. How does OpenGL know how long an index spans? Go to glVertexAttribPointer.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, bufferVertices.size() * 3, bufferVertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, bufferVertices.size() * 3 * 4, bufferVertices.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 
 					 // We've sent the vertex data over to OpenGL, but there's still something missing.
 					 // In what order should it draw those vertices? That's why we'll need a GL_ELEMENT_ARRAY_BUFFER for this.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36, bufferIndices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * 4, bufferIndices, GL_STATIC_DRAW);
 
 	// Unbind the currently bound buffer so that we don't accidentally make unwanted changes to it.
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -82,6 +86,10 @@ void Block::assignVertex(glm::vec3 point, glm::vec3 center)
 void Block::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 {
 	//cout << "draw block!" << endl;
+	if (isPark)
+		color = glm::vec3(0.2f, 0.8f, 0.3f);
+	else
+		return;
 
 	glUseProgram(shaderProgram);
 	glFrontFace(GL_CCW);
@@ -120,24 +128,16 @@ void Block::makeBlock()
 	pp = pp + glm::normalize((np - pp) + (pn - pp)) * width;
 
 	// Now goes in buffer
+	float blockHeight = 0.5f;
 	bufferVertices.push_back(np);
 	bufferVertices.push_back(pp);
-	bufferVertices.push_back(pp + glm::vec3(0.0f, 2.0f, 0.0f));
-	bufferVertices.push_back(np + glm::vec3(0.0f, 2.0f, 0.0f));
+	bufferVertices.push_back(pp + glm::vec3(0.0f, blockHeight, 0.0f));
+	bufferVertices.push_back(np + glm::vec3(0.0f, blockHeight, 0.0f));
 
 	bufferVertices.push_back(nn);
 	bufferVertices.push_back(pn);
-	bufferVertices.push_back(pn + glm::vec3(0.0f, 2.0f, 0.0f));
-	bufferVertices.push_back(nn + glm::vec3(0.0f, 2.0f, 0.0f));
-
-	/*[8][3] = {
-		// "Front" vertices
-		{ -2.0, -2.0,  2.0 },{ 2.0, -2.0,  2.0 },{ 2.0,  2.0,  2.0 },{ -2.0,  2.0,  2.0 },
-		// "Back" vertices
-		{ -2.0, -2.0, -2.0 },{ 2.0, -2.0, -2.0 },{ 2.0,  2.0, -2.0 },{ -2.0,  2.0, -2.0 }
-	};*/
-
-	makeBuildings();
+	bufferVertices.push_back(pn + glm::vec3(0.0f, blockHeight, 0.0f));
+	bufferVertices.push_back(nn + glm::vec3(0.0f, blockHeight, 0.0f));
 }
 
 void Block::makeBuildings()
