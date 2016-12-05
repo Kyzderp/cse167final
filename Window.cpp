@@ -6,7 +6,7 @@
 #include "BumpOBJ.h"
 #include "BounceTransform.h"
 #include "GLFWStarterProject/include/irrKlang.h"
-
+#include <time.h>       /* time */
 
 using namespace std;
 
@@ -51,6 +51,7 @@ glm::mat4 Window::V;
 Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
 glm::vec4 sphereDir;
+float nick = 1.0f;
 float speed = 0.0f; // Current speed
 float maxSpeed = 0.3f;
 float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
@@ -61,6 +62,7 @@ const float gravity = 0.01;
 Group* root;
 Group* nanners;
 QuadPrism* Window::buildings;
+Floor *flor;
 
 MatrixTransform* rotation;
 BounceTransform* bounce;
@@ -94,6 +96,8 @@ void Window::initialize_objects()
 	click = 0;
 	prevX = 0;
 	prevY = 0;
+
+	srand(time(NULL));
 
 	ISoundEngine* se = createIrrKlangDevice();
 	//se->play2D("../audio/breakout.mp3", GL_TRUE);
@@ -146,13 +150,16 @@ void Window::initialize_objects()
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		32.0f);
+	banana->rotate(glm::vec3(1.0f, 1.0f, 0.0f), 180.0f);
 
 	nanners = new Group();
-	rotation = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
+	//rotation = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
 	bounce = new BounceTransform(glm::mat4(1.0f), glm::mat4(1.0f));
-	rotation->addChild(banana);
-	bounce->addChild(rotation);
+	//rotation->addChild(banana);
+	//bounce->addChild(rotation);
 	nanners->addChild(bounce);
+
+	createBananas();
 
 	glUseProgram(bumpShader);
 
@@ -164,9 +171,8 @@ void Window::initialize_objects()
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		32.0f);
 
-	banana->rotate(glm::vec3(1.0f, 1.0f, 0.0f), 180.0f);
-	banana->move(glm::vec3(0.0f, 2.0f, 0.0f));
-	banana->scale(1.0f);
+	//banana->move(glm::vec3(0.0f, 1.0f, 0.0f));
+	//banana->scale(5.0f);
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
@@ -261,10 +267,10 @@ void Window::display_callback(GLFWwindow* window)
 {
 	// I'm putting these here because if I put it in key callback it's very slow and weird to control
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		sphereDir = glm::rotate(glm::mat4(1.0f), 0.05f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+		sphereDir = glm::rotate(glm::mat4(1.0f), 0.05f * nick, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		sphereDir = glm::rotate(glm::mat4(1.0f), -0.05f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+		sphereDir = glm::rotate(glm::mat4(1.0f), -0.05f * nick, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 	}
 
 	// jumping is fun
@@ -276,7 +282,7 @@ void Window::display_callback(GLFWwindow* window)
 
 	// give forward burst
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		speed = maxSpeed;
+		speed = maxSpeed * nick;
 	else
 	{
 		speed *= friction;
@@ -314,14 +320,13 @@ void Window::display_callback(GLFWwindow* window)
 		glUniform3f(viewPosLoc, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 		glUniform3f(viewPosbump, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 
-		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
 		orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
 	}
 	else
 	{
 		// default camera
 		glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
-		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
+
 		orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
 
@@ -338,11 +343,50 @@ void Window::display_callback(GLFWwindow* window)
 	housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
 	// Swap buffers
 	glfwSwapBuffers(window);
+}
+
+void Window::createBananas()
+{
+	std::vector<glm::vec3> rVerts = flor->roadVertices;
+	std::vector<unsigned int> rIndices = flor->roadIndices;
+
+	int numNanners = rand() % 12 + 10;
+
+	for (int i = 0; i < numNanners; i++) {
+
+		int randIdx = rand() % rIndices.size() + 1; // any random index
+		float x;
+		float z;
+
+		if (randIdx % 2 == 0) { // even index
+			glm::vec3 v1 = rVerts[rIndices[randIdx]];
+			glm::vec3 v2 = rVerts[rIndices[randIdx + 1]];
+
+			if ((rand() % 10) > 2) {
+				x = (v1.x + v2.x) / 2.0f;
+				z = (v1.z + v2.z) / 2.0f;
+			}
+			else {
+				x = v1.x;
+				z = v1.z;
+			}
+		}
+		else {
+			glm::vec3 v1 = rVerts[rIndices[randIdx]];
+			x = v1.x;
+			z = v1.z;
+		}
+
+		MatrixTransform *mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(x, 2.0f, z)), glm::mat4(1.0f));
+		mt->addChild(banana);
+		bounce->addChild(mt);
+	}
 }
 
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

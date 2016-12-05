@@ -44,6 +44,8 @@ public:
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
+	static void createBananas();
+
 	static glm::vec3 trackBallMapping(double xpos, double ypos, double width, double height);
 };
 
