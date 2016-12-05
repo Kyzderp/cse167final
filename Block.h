@@ -19,7 +19,7 @@
 class Block
 {
 public:
-	Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four);
+	Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four, int isPark);
 	~Block();
 
 	// n = negative, p = positive, assume it's centered at origin
@@ -29,6 +29,8 @@ public:
 	glm::vec3 np;
 	glm::vec3 pn;
 	glm::vec3 pp;
+
+	int isPark;
 
 	glm::mat4 toWorld;
 

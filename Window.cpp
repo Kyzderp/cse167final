@@ -50,8 +50,12 @@ glm::mat4 Window::V;
 Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
 glm::vec4 sphereDir;
-glm::vec4 orangeSpinAxis(1.0f,0,0,0);
-float speed = 0.1f;
+float speed = 0.0f; // Current speed
+float maxSpeed = 0.5f;
+float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
+
+const float friction = 0.95f; // amount to multiply by
+const float gravity = 0.01;
 
 Group* root;
 Group* nanners;
@@ -135,10 +139,6 @@ void Window::initialize_objects()
 
 	banana->rotate(glm::vec3(0, 0, 1.0f), 180.0f);
 	banana->scale(1.0f);
-
-	//orange->move(glm::vec3(0, 5.0f, 0.0f));
-	//orange->scale(8.0f);
-
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
@@ -230,22 +230,34 @@ void Window::display_callback(GLFWwindow* window)
 {
 	// I'm putting these here because if I put it in key callback it's very slow and weird to control
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		sphereDir = glm::rotate(glm::mat4(1.0f), speed * 5.0f * speed, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
-	//	orangeSpinAxis = glm::rotate(glm::mat4(1.0f), speed * 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * orangeSpinAxis;
+		sphereDir = glm::rotate(glm::mat4(1.0f), 0.05f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		sphereDir = glm::rotate(glm::mat4(1.0f), speed * -5.0f * speed, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
-		//orangeSpinAxis = glm::rotate(glm::mat4(1.0f), speed * 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * orangeSpinAxis;
+		sphereDir = glm::rotate(glm::mat4(1.0f), -0.05f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 	}
 
-	// move
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		spherePos = spherePos + glm::vec3(sphereDir) * speed;
-
-		orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
-
-		//orange->rotate(glm::vec3(orangeSpinAxis), 0.1f); // HANNAH HERE!!!
+	// jumping is fun
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && spherePos.y < 1.05 && vertSpeed <= 0)
+	{
+		vertSpeed = 0.3f;
 	}
+	vertSpeed -= gravity;
+
+	// give forward burst
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		speed = maxSpeed;
+	else
+	{
+		speed *= friction;
+		if (speed < 0.001)
+			speed = 0;
+	}
+
+	spherePos = spherePos + glm::vec3(sphereDir) * speed + glm::vec3(0.0f, vertSpeed, 0.0f);
+	if (spherePos.y < 1.0)
+		spherePos.y = 1.0;
+
+	orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
 
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -272,14 +284,14 @@ void Window::display_callback(GLFWwindow* window)
 		glUniform3f(viewPosbump, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 
 		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
-		//orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
+		orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
 	}
 	else
 	{
 		// default camera
 		glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
 		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
-		//orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
+		orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
 
 	// now render objects
@@ -291,7 +303,7 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
 
-	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
