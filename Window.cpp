@@ -145,7 +145,7 @@ void Window::initialize_objects()
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		32.0f);
 
-	banana->move(glm::vec3(0.0f, 3.0f, 0.0f));
+	//banana->move(glm::vec3(0.0f, 1.0f, 0.0f));
 	//banana->scale(5.0f);
 }
 
