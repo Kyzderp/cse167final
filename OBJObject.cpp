@@ -137,7 +137,7 @@ void OBJObject::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	glUseProgram(shaderProgram);
 
 	// Calculate the combination of the model and view (camera inverse) matrices
-	glm::mat4 modelview = Window::V * this->toWorld;
+	glm::mat4 modelview = Window::V * C * this->toWorld;
 
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
 	uModelview = glGetUniformLocation(shaderProgram, "modelview");
@@ -171,7 +171,12 @@ void OBJObject::spin(float deg)
 }
 
 void OBJObject::rotate(glm::vec3 axis, float deg) {
-	this->toWorld = glm::rotate(glm::mat4(1.0f), deg * 0.007f, axis) * this->toWorld;
+	/*glm::mat4 translateToOrigin = glm::translate(glm::mat4(1.0f), -Window::spherePos);
+	glm::mat4 rotateAboutOrigin = glm::rotate(glm::mat4(1.0f), deg / 180.0f * glm::pi<float>(), axis);
+	glm::mat4 rotate = glm::inverse(translateToOrigin) * rotateAboutOrigin * translateToOrigin;
+	this->toWorld = glm::inverse(translateToOrigin) * rotateAboutOrigin * translateToOrigin * this->toWorld;*/
+
+	this->toWorld = glm::rotate(glm::mat4(1.0f), deg / 180.0f * glm::pi<float>(), axis) * this->toWorld;
 }
 
 void OBJObject::move(glm::vec3 movementVec)
