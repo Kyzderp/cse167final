@@ -242,19 +242,6 @@ void Window::display_callback(GLFWwindow* window)
 {
 	// I'm putting these here because if I put it in key callback it's very slow and weird to control
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-<<<<<<< HEAD
-		sphereDir = glm::rotate(glm::mat4(1.0f), speed * 5.0f * speed, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
-	}
-	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		sphereDir = glm::rotate(glm::mat4(1.0f), speed * -5.0f * speed, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
-	}
-
-	// move
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		spherePos = spherePos + glm::vec3(sphereDir) * speed;
-
-		orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
-=======
 		sphereDir = glm::rotate(glm::mat4(1.0f), 0.05f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
@@ -276,7 +263,6 @@ void Window::display_callback(GLFWwindow* window)
 		speed *= friction;
 		if (speed < 0.001)
 			speed = 0;
->>>>>>> 777fd9db9a9c91042ceea1cd7038a9055f10723b
 	}
 
 	spherePos = spherePos + glm::vec3(sphereDir) * speed + glm::vec3(0.0f, vertSpeed, 0.0f);
@@ -309,20 +295,13 @@ void Window::display_callback(GLFWwindow* window)
 		glUniform3f(viewPosLoc, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 		glUniform3f(viewPosbump, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 
-<<<<<<< HEAD
-=======
-		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
->>>>>>> 777fd9db9a9c91042ceea1cd7038a9055f10723b
 		orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
 	}
 	else
 	{
 		// default camera
 		glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
-<<<<<<< HEAD
-=======
-		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
->>>>>>> 777fd9db9a9c91042ceea1cd7038a9055f10723b
+
 		orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
 
