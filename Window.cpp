@@ -48,7 +48,7 @@ glm::mat4 Window::P;
 glm::mat4 Window::V;
 
 Sphere* Window::sphere;
-glm::vec3 spherePos;
+glm::vec3 Window::spherePos;
 glm::vec4 sphereDir;
 glm::vec4 orangeSpinAxis(1.0f,0,0,0);
 float speed = 0.1f;
@@ -98,7 +98,7 @@ void Window::initialize_objects()
 	root->addChild(floor);
 
 	spherePos = glm::vec3(0.0f, 1.0f, 0.0f);
-	sphereDir = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+	sphereDir = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 	sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -4.0f) + glm::vec3(0.0f, 2.0f, 0.0f));
 	sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
 
@@ -230,17 +230,20 @@ void Window::display_callback(GLFWwindow* window)
 {
 	// I'm putting these here because if I put it in key callback it's very slow and weird to control
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		sphereDir = glm::rotate(glm::mat4(1.0f), speed * 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+		sphereDir = glm::rotate(glm::mat4(1.0f), speed * 5.0f * speed, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 	//	orangeSpinAxis = glm::rotate(glm::mat4(1.0f), speed * 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * orangeSpinAxis;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		sphereDir = glm::rotate(glm::mat4(1.0f), speed * -5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+		sphereDir = glm::rotate(glm::mat4(1.0f), speed * -5.0f * speed, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 		//orangeSpinAxis = glm::rotate(glm::mat4(1.0f), speed * 5.0f / 60.0f, glm::vec3(0.0f, 1.0f, 0.0f)) * orangeSpinAxis;
 	}
 
 	// move
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		spherePos = spherePos + glm::vec3(sphereDir) * speed * 0.1f;
+		spherePos = spherePos + glm::vec3(sphereDir) * speed;
+
+		orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
+
 		//orange->rotate(glm::vec3(orangeSpinAxis), 0.1f); // HANNAH HERE!!!
 	}
 

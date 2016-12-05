@@ -24,12 +24,12 @@ Floor::Floor()
 
 	glBindVertexArray(roadVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, roadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(roadVertices) * 4 * 4, roadVertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, roadVertices.size() * 3 * 4, roadVertices.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roadEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(roadIndices) * 4 * 4, roadIndices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, roadIndices.size() * 4, roadIndices.data(), GL_STATIC_DRAW);
 	cout << "sizeof(roadIndices)" << sizeof(roadIndices) << endl;
 
 	// Unbind

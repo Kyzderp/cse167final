@@ -26,6 +26,7 @@ public:
 
 	static GLuint skyboxTexture;
 	static Sphere* sphere; // A horrible sphere
+	static glm::vec3 spherePos;
 	static QuadPrism* buildings;
 
 	static GLint solidShader;
