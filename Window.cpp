@@ -127,8 +127,8 @@ void Window::initialize_objects()
 	housie->addChild(roof);
 	housies = new Group();
 
-	Floor* floor = new Floor();
-	root->addChild(floor);
+	flor = new Floor();
+	root->addChild(flor);
 
 	spherePos = glm::vec3(0.0f, 1.0f, 0.0f);
 	sphereDir = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
