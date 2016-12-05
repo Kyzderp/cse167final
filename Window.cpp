@@ -8,8 +8,6 @@
 #include "GLFWStarterProject/include/irrKlang.h"
 #include <time.h>       /* time */
 
-
-
 using namespace std;
 
 const char* window_title = "GLFW Starter Project";
@@ -53,6 +51,7 @@ glm::mat4 Window::V;
 Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
 glm::vec4 sphereDir;
+float nick = 1.0f;
 float speed = 0.0f; // Current speed
 float maxSpeed = 0.5f;
 float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
@@ -242,10 +241,10 @@ void Window::display_callback(GLFWwindow* window)
 {
 	// I'm putting these here because if I put it in key callback it's very slow and weird to control
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		sphereDir = glm::rotate(glm::mat4(1.0f), 0.05f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+		sphereDir = glm::rotate(glm::mat4(1.0f), 0.05f * nick, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		sphereDir = glm::rotate(glm::mat4(1.0f), -0.05f, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
+		sphereDir = glm::rotate(glm::mat4(1.0f), -0.05f * nick, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
 	}
 
 	// jumping is fun
@@ -257,7 +256,7 @@ void Window::display_callback(GLFWwindow* window)
 
 	// give forward burst
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		speed = maxSpeed;
+		speed = maxSpeed * nick;
 	else
 	{
 		speed *= friction;
