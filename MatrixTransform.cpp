@@ -60,8 +60,8 @@ void MatrixTransform::update()
 		}
 
 		// Rotate it about the X axis
-		glm::mat4 translateToOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, -1.5, 0.0));
-		glm::mat4 rotateAboutOrigin = glm::rotate(glm::mat4(1.0f), angle / 180.0f * glm::pi<float>(), glm::vec3(1.0, 0.0, 0.0));
+		glm::mat4 translateToOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.5f, 0.0f));
+		glm::mat4 rotateAboutOrigin = glm::rotate(glm::mat4(1.0f), angle / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
 		//rotate = glm::inverse(translateToOrigin) * rotateAboutOrigin * translateToOrigin;
 		rotate = rotateAboutOrigin;
 	}

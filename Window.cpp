@@ -4,6 +4,7 @@
 #include "Floor.h"
 #include "OBJObject.h"
 #include "BumpOBJ.h"
+#include "BounceTransform.h"
 #include "GLFWStarterProject/include/irrKlang.h"
 
 
@@ -58,6 +59,7 @@ Group* nanners;
 QuadPrism* Window::buildings;
 
 MatrixTransform* rotation;
+BounceTransform* bounce;
 
 OBJObject *banana;
 BumpOBJ *orange;
@@ -120,8 +122,10 @@ void Window::initialize_objects()
 
 	nanners = new Group();
 	rotation = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
+	bounce = new BounceTransform(glm::mat4(1.0f), glm::mat4(1.0f));
 	rotation->addChild(banana);
-	nanners->addChild(rotation);
+	bounce->addChild(rotation);
+	nanners->addChild(bounce);
 
 	glUseProgram(bumpShader);
 
@@ -133,7 +137,8 @@ void Window::initialize_objects()
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		32.0f);
 
-	banana->rotate(glm::vec3(0, 0, 1.0f), 180.0f);
+	banana->rotate(glm::vec3(1.0f, 1.0f, 0.0f), 180.0f);
+	banana->move(glm::vec3(0.0f, 2.0f, 0.0f));
 	banana->scale(1.0f);
 
 	//orange->move(glm::vec3(0, 5.0f, 0.0f));
