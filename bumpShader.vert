@@ -21,7 +21,7 @@ void main()
 	FragPos = vec3(modelview * vec4(position, 1.0f));
 
 	//FragPos = position;
-	norm = normal;
+	norm = mat3(transpose(inverse(modelview))) * normal;\
 	tCoords = texCoords;
 
 	Tangent = tangent;

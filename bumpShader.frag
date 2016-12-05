@@ -38,7 +38,7 @@ void main()
 
 	color = vec4(result, 1.0);            // texture with lighting
 
-    //color = texture(dispMap, tCoords);        // texture no lighting
+    //color = texture(tex, tCoords);        // texture no lighting
 	//color = vec4(1.0f, 1.0f, 0.0f, 1.0f); // yellow
 	//color = vec4(1.0f, norm);             // normal coloring
 }

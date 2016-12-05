@@ -10,7 +10,6 @@ BumpOBJ::BumpOBJ(const char *filepath, const char *tex_filepath, const char *nor
 {
 	// load normal texture map
 	normalMap = loadTexture(normal_filepath);
-	//dispMap = loadTexture("../objects/Orange_Displace.ppm");
 
 	// now just run the extra code to generate tangent vectors
 	for (unsigned int i = 0; i < indices.size(); i += 3) {
@@ -77,14 +76,11 @@ void BumpOBJ::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 
 	glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
 	glUniform1i(glGetUniformLocation(shaderProgram, "normalMap"), 1);
-	//glUniform1i(glGetUniformLocation(shaderProgram, "dispMap"), 2);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureMap);
 	glActiveTexture(GL_TEXTURE1);
   	glBindTexture(GL_TEXTURE_2D, normalMap);
-	//glActiveTexture(GL_TEXTURE2);
-	//glBindTexture(GL_TEXTURE_2D, dispMap);
 
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);

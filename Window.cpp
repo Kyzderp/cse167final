@@ -54,7 +54,10 @@ glm::vec4 orangeSpinAxis(1.0f,0,0,0);
 float speed = 0.1f;
 
 Group* root;
+Group* nanners;
 QuadPrism* Window::buildings;
+
+MatrixTransform* rotation;
 
 OBJObject *banana;
 BumpOBJ *orange;
@@ -93,7 +96,6 @@ void Window::initialize_objects()
 
 	Floor* floor = new Floor();
 	root->addChild(floor);
-	
 
 	spherePos = glm::vec3(0.0f, 1.0f, 0.0f);
 	sphereDir = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
@@ -116,6 +118,11 @@ void Window::initialize_objects()
 		glm::vec3(1.0f, 1.0f, 0.0f),
 		32.0f);
 
+	nanners = new Group();
+	rotation = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
+	rotation->addChild(banana);
+	nanners->addChild(rotation);
+
 	glUseProgram(bumpShader);
 
 	orange = new BumpOBJ("../objects/orange_lower_poly.obj",
@@ -127,8 +134,7 @@ void Window::initialize_objects()
 		32.0f);
 
 	banana->rotate(glm::vec3(0, 0, 1.0f), 180.0f);
-	banana->move(glm::vec3(12.0f, 5.0f, 0));
-	banana->scale(10.0f);
+	banana->scale(1.0f);
 
 	//orange->move(glm::vec3(0, 5.0f, 0.0f));
 	//orange->scale(8.0f);
@@ -217,6 +223,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
+	nanners->update();
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -243,14 +250,14 @@ void Window::display_callback(GLFWwindow* window)
 	// Render skybox
 	skybox->draw(skyboxShader);
 
-	// now render objects
-	glUseProgram(shaderProgram);
+	// Draw orange
+	glUseProgram(bumpShader);
+	glUniform3f(viewPosbump, cam_pos.x, cam_pos.y, cam_pos.z);
 
-	// Set up light(s)
-	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
-	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.ambient"), 0.2f, 0.2f, 0.2f);
-	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.6f, 0.6f, 0.6f);
-	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.7f, 0.7f, 0.7f);
+	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.direction"), -0.2f, -1.0f, -0.7f);
+	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.ambient"), 0.3f, 0.3f, 0.3f);
+	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
+	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
 
 	if (sphereCamera)
 	{
@@ -262,31 +269,28 @@ void Window::display_callback(GLFWwindow* window)
 		glUniform3f(viewPosbump, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 
 		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
-		orange->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
+		//orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
 	}
 	else
 	{
 		// default camera
 		glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
 		//sphere->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
-		orange->draw(shaderProgram, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
-
+		//orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
 
-	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	// now render objects
+	glUseProgram(shaderProgram);
 
-	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+	// Set up light(s)
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.direction"), -0.2f, -1.0f, -0.7f);
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.ambient"), 0.3f, 0.3f, 0.3f);
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
 
-	// Draw orange
-	glUseProgram(bumpShader);
-	glUniform3f(viewPosbump, cam_pos.x, cam_pos.y, cam_pos.z);
+	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
-	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
-	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.ambient"), 0.2f, 0.2f, 0.2f);
-	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.diffuse"), 0.6f, 0.6f, 0.6f);
-	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.specular"), 0.7f, 0.7f, 0.7f);
-
-	//orange->draw(bumpShader, glm::mat4(1.0f), glm::vec3(1.0f));
+	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();

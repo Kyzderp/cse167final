@@ -137,7 +137,7 @@ void OBJObject::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	glUseProgram(shaderProgram);
 
 	// Calculate the combination of the model and view (camera inverse) matrices
-	glm::mat4 modelview = Window::V * this->toWorld;
+	glm::mat4 modelview = Window::V * this->toWorld * C;
 
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
 	uModelview = glGetUniformLocation(shaderProgram, "modelview");
