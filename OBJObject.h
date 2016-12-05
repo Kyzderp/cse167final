@@ -36,6 +36,8 @@ public:
 	glm::mat4 toWorld;
 	glm::mat4 default;
 
+	int cull;
+
 	glm::vec3 matAmb;
 	glm::vec3 matDiff;
 	glm::vec3 matSpec;

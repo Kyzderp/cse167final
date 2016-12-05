@@ -6,15 +6,16 @@ using namespace std;
 
 GLuint BlockTexture;
 
-Block::Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four, int isPark)
+Block::Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four, int type)
 {
-	this->isPark = isPark;
+	this->type = type;
 	toWorld = glm::mat4(1.0f);
 
 	// Figure out which one is most negative, most positive, etc
 	// Average them all and call that the center
-	glm::vec3 center = one + two + three + four;
+	center = one + two + three + four;
 	center = center * 0.25f;
+
 	// This probably breaks if the shape is really weird, but for city it should be ok
 	assignVertex(one, center);
 	assignVertex(two, center);
@@ -23,7 +24,15 @@ Block::Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four, int 
 
 	makeBlock();
 
-	if (!isPark)
+	if (type == 2)
+	{
+		MatrixTransform* stuff = new MatrixTransform(glm::translate(glm::mat4(1.0f), center),
+			glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f)));
+		stuff->addChild(Window::housie);
+		Window::housies->addChild(stuff);
+	}
+
+	if (type == 0)
 		makeBuildings();
 
 	// Create array object and buffers. Remember to delete your buffers when the object is destroyed!
@@ -86,14 +95,13 @@ void Block::assignVertex(glm::vec3 point, glm::vec3 center)
 void Block::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 {
 	//cout << "draw block!" << endl;
-	if (isPark)
+	if (type == 1 || type == 2)
 		color = glm::vec3(0.2f, 0.8f, 0.3f);
 	else
 		return;
 
 	glUseProgram(shaderProgram);
 	glFrontFace(GL_CCW);
-
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
@@ -118,6 +126,11 @@ void Block::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	glBindVertexArray(0);
 }
 
+void Block::findSquare()
+{
+
+}
+
 void Block::makeBlock()
 {
 	float width = 4.0f;
@@ -128,7 +141,7 @@ void Block::makeBlock()
 	pp = pp + glm::normalize((np - pp) + (pn - pp)) * width;
 
 	// Now goes in buffer
-	float blockHeight = 0.5f;
+	float blockHeight = 0.2f;
 	bufferVertices.push_back(np);
 	bufferVertices.push_back(pp);
 	bufferVertices.push_back(pp + glm::vec3(0.0f, blockHeight, 0.0f));

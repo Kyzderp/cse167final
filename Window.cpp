@@ -52,7 +52,7 @@ Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
 glm::vec4 sphereDir;
 float speed = 0.0f; // Current speed
-float maxSpeed = 0.5f;
+float maxSpeed = 0.3f;
 float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
 
 const float friction = 0.95f; // amount to multiply by
@@ -67,6 +67,10 @@ BounceTransform* bounce;
 
 OBJObject *banana;
 BumpOBJ *orange;
+Group* Window::housie;
+Group* Window::housies;
+OBJObject* house;
+OBJObject* roof;
 
 GLFWwindow* windowInstance;
 
@@ -99,6 +103,25 @@ void Window::initialize_objects()
 
 	Window::sphere = new Sphere(0);
 	buildings = new QuadPrism();
+
+	house = new OBJObject("../objects/Housie3.obj",
+		"../objects/concrete.ppm",
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		32.0f);
+	house->cull = 0;
+
+	roof = new OBJObject("../objects/Housie3RoofEdit.obj",
+		"../objects/grayroof.ppm",
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		32.0f);
+	housie = new Group();
+	housie->addChild(house);
+	housie->addChild(roof);
+	housies = new Group();
 
 	Floor* floor = new Floor();
 	root->addChild(floor);
@@ -155,6 +178,9 @@ void Window::clean_up()
 	delete(banana);
 	delete(orange);
 	delete(buildings);
+	delete(house);
+	delete(housies);
+	delete(housie);
 
 	glDeleteProgram(shaderProgram);
 	glDeleteProgram(skyboxShader);
@@ -309,6 +335,7 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
 
 	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
