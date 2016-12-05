@@ -16,6 +16,7 @@
     <ClCompile Include="..\Sphere.cpp" />
     <ClCompile Include="..\Window.cpp" />
     <ClCompile Include="BumpOBJ.cpp" />
+    <ClCompile Include="..\BounceTransform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Block.h" />
@@ -33,6 +34,7 @@
     <ClInclude Include="..\Skybox.h" />
     <ClInclude Include="..\Sphere.h" />
     <ClInclude Include="..\Window.h" />
+    <ClInclude Include="..\BounceTransform.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shader.frag" />
