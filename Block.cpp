@@ -159,7 +159,7 @@ void Block::makeBuildings()
 		glm::min(glm::length(np - nn), glm::length(np - pp)), 
 		glm::min(glm::length(pn - pp), glm::length(pn - nn))
 	);
-	width = width * 0.4;
+	width = width * 0.4f;
 
 	glm::vec3 inner_nn = nn + glm::normalize((np - nn) + (pn - nn)) * width;
 	glm::vec3 inner_pn = pn + glm::normalize((nn - pn) + (pp - pn)) * width;
@@ -213,28 +213,38 @@ void Block::makeBuildings()
 	Window::buildings->addPoints(inner_pn, p_down, right_n, pn);
 }
 
-void Block::doCollisions()
+int Block::doCollisions(int reflect)
 {
+	int collided = 0;
 	if (collision2D(glm::vec2(pp.x, pp.z), glm::vec2(pn.x, pn.z)))
 	{
 		cout << "collision with right side" << endl;
-		Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((pp - pn).z, 0.0f, (pp - pn).x))), 0.0f);
+		collided++;
+		if (reflect)
+			Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((pp - pn).z, 0.0f, (pp - pn).x))), 0.0f);
 	}
 	if (collision2D(glm::vec2(pp.x, pp.z), glm::vec2(np.x, np.z)))
 	{
 		cout << "collision with top side" << endl;
-		Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((np - pp).z, 0.0f, (np - pp).x))), 0.0f);
+		collided++;
+		if (reflect)
+			Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((np - pp).z, 0.0f, (np - pp).x))), 0.0f);
 	}
 	if (collision2D(glm::vec2(nn.x, nn.z), glm::vec2(pn.x, pn.z)))
 	{
 		cout << "collision with bottom side" << endl;
-		Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((pn - nn).z, 0.0f, (pn - nn).x))), 0.0f);
+		collided++;
+		if (reflect)
+			Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((pn - nn).z, 0.0f, (pn - nn).x))), 0.0f);
 	}
 	if (collision2D(glm::vec2(nn.x, nn.z), glm::vec2(np.x, np.z)))
 	{
 		cout << "collision with left side" << endl;
-		Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((nn - np).z, 0.0f, (nn - np).x))), 0.0f);
+		collided++;
+		if (reflect)
+			Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((nn - np).z, 0.0f, (nn - np).x))), 0.0f);
 	}
+	return collided;
 }
 
 int Block::collision2D(glm::vec2 start, glm::vec2 end)

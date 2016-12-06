@@ -254,7 +254,7 @@ void Floor::makeRoads()
 
 	// Now the blocks
 	// Select one for park
-	srand(time(NULL));
+	srand((unsigned)time(NULL));
 	int parkX = rand() % xn;
 	int parkZ = rand() % zn;
 

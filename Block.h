@@ -42,7 +42,7 @@ public:
 	void makeBlock();
 	void makeBuildings();
 	void findSquare();
-	void doCollisions();
+	int doCollisions(int reflect);
 	int collision2D(glm::vec2 start, glm::vec2 end);
 
 	// These variables are needed for the shader program

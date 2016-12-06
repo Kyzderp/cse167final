@@ -57,7 +57,7 @@ float maxSpeed = 0.3f;
 float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
 
 const float friction = 0.95f; // amount to multiply by
-const float gravity = 0.01;
+const float gravity = 0.01f;
 
 Group* root;
 Group* nanners;
@@ -97,7 +97,7 @@ void Window::initialize_objects()
 	prevX = 0;
 	prevY = 0;
 
-	srand(time(NULL));
+	srand((unsigned)time(NULL));
 
 	ISoundEngine* se = createIrrKlangDevice();
 	//se->play2D("../audio/breakout.mp3", GL_TRUE);
@@ -130,7 +130,8 @@ void Window::initialize_objects()
 	flor = new Floor();
 	root->addChild(flor);
 
-	spherePos = glm::vec3(0.0f, 1.0f, 0.0f);
+	spherePos = flor->roadVertices[flor->roadVertices.size() / 2] + glm::vec3(0.0f, 1.0f, 0.0f);
+	//spherePos = glm::vec3(0.0f, 1.0f, 0.0f);
 	sphereDir = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 	sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -4.0f) + glm::vec3(0.0f, 2.0f, 0.0f));
 	sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
@@ -296,8 +297,26 @@ void Window::display_callback(GLFWwindow* window)
 	orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
 
 	// Collision with walls
+	int collided = 0;
+	Block* collisionBlock = flor->blocks[0];
 	for (int i = 0; i < flor->blocks.size(); i++)
-		flor->blocks[i]->doCollisions();
+	{
+		if (flor->blocks[i]->doCollisions(1))
+		{
+			// Pretty safe to assume it will only collide with one block at once, because
+			// the roads are wider than the orange
+			collided = 1;
+			collisionBlock = flor->blocks[i];
+			break;
+		}
+	}
+	if (collided) // Give an extra boost to get it out of the range
+	{
+		//spherePos = spherePos + glm::vec3(sphereDir) * speed;
+		// Extra iteration because sometimes it still isn't out of the range on a small angle
+		while (collisionBlock->doCollisions(0))
+			spherePos = spherePos + glm::vec3(sphereDir) * 0.01f;
+	}
 
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
