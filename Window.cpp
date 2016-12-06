@@ -50,7 +50,7 @@ glm::mat4 Window::V;
 
 Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
-glm::vec4 sphereDir;
+glm::vec4 Window::sphereDir;
 float nick = 1.0f;
 float speed = 0.0f; // Current speed
 float maxSpeed = 0.3f;
@@ -293,8 +293,11 @@ void Window::display_callback(GLFWwindow* window)
 	spherePos = spherePos + glm::vec3(sphereDir) * speed + glm::vec3(0.0f, vertSpeed, 0.0f);
 	if (spherePos.y < 1.0)
 		spherePos.y = 1.0;
-
 	orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
+
+	// Collision with walls
+	for (int i = 0; i < flor->blocks.size(); i++)
+		flor->blocks[i]->doCollisions();
 
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

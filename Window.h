@@ -30,6 +30,7 @@ public:
 	static QuadPrism* buildings;
 	static Group* housies;
 	static Group* housie;
+	static glm::vec4 sphereDir;
 
 	static GLint solidShader;
 

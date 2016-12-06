@@ -212,3 +212,89 @@ void Block::makeBuildings()
 	// bottom right
 	Window::buildings->addPoints(inner_pn, p_down, right_n, pn);
 }
+
+void Block::doCollisions()
+{
+	if (collision2D(glm::vec2(pp.x, pp.z), glm::vec2(pn.x, pn.z)))
+	{
+		cout << "collision with right side" << endl;
+		Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((pp - pn).z, 0.0f, (pp - pn).x))), 0.0f);
+	}
+	if (collision2D(glm::vec2(pp.x, pp.z), glm::vec2(np.x, np.z)))
+	{
+		cout << "collision with top side" << endl;
+		Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((np - pp).z, 0.0f, (np - pp).x))), 0.0f);
+	}
+	if (collision2D(glm::vec2(nn.x, nn.z), glm::vec2(pn.x, pn.z)))
+	{
+		cout << "collision with bottom side" << endl;
+		Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((pn - nn).z, 0.0f, (pn - nn).x))), 0.0f);
+	}
+	if (collision2D(glm::vec2(nn.x, nn.z), glm::vec2(np.x, np.z)))
+	{
+		cout << "collision with left side" << endl;
+		Window::sphereDir = glm::vec4(glm::reflect(glm::vec3(Window::sphereDir), glm::normalize(glm::vec3((nn - np).z, 0.0f, (nn - np).x))), 0.0f);
+	}
+}
+
+int Block::collision2D(glm::vec2 start, glm::vec2 end)
+{
+	float r = 1.0f; // this is the sphere radius. hardcoded so whatever.
+	// http://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
+
+	glm::vec2 d = end - start;
+	glm::vec2 f = start - glm::vec2(Window::spherePos.x, Window::spherePos.z);
+
+
+	float a = glm::dot(d, d);
+	float b = 2 * glm::dot(f, d);
+	float c = glm::dot(f, f) - r * r;
+
+	float discriminant = b*b - 4 * a*c;
+	if (discriminant < 0)
+	{
+		// no intersection
+		return 0;
+	}
+	else
+	{
+		// ray didn't totally miss sphere,
+		// so there is a solution to
+		// the equation.
+
+		discriminant = sqrt(discriminant);
+
+		// either solution may be on or off the ray so need to test both
+		// t1 is always the smaller value, because BOTH discriminant and
+		// a are nonnegative.
+		float t1 = (-b - discriminant) / (2 * a);
+		float t2 = (-b + discriminant) / (2 * a);
+
+		// 3x HIT cases:
+		//          -o->             --|-->  |            |  --|->
+		// Impale(t1 hit,t2 hit), Poke(t1 hit,t2>1), ExitWound(t1<0, t2 hit), 
+
+		// 3x MISS cases:
+		//       ->  o                     o ->              | -> |
+		// FallShort (t1>1,t2>1), Past (t1<0,t2<0), CompletelyInside(t1<0, t2>1)
+
+		if (t1 >= 0 && t1 <= 1)
+		{
+			// t1 is the intersection, and it's closer than t2
+			// (since t1 uses -b - discriminant)
+			// Impale, Poke
+			return 1;
+		}
+
+		// here t1 didn't intersect so we are either started
+		// inside the sphere or completely past it
+		if (t2 >= 0 && t2 <= 1)
+		{
+			// ExitWound
+			return 1;
+		}
+
+		// no intn: FallShort, Past, CompletelyInside
+		return 0;
+	}
+}
