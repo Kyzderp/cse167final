@@ -2,6 +2,7 @@
 #include "Skybox.h"
 #include <iostream>
 #include "Floor.h"
+#include "Cube.h"
 #include "OBJObject.h"
 #include "BumpOBJ.h"
 #include "BounceTransform.h"
@@ -40,6 +41,9 @@ glm::vec3 sphere_cam_pos(0.0f, 5.0f, 20.0f);		// e  | Position of camera
 glm::vec3 sphere_cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
 glm::vec3 sphere_cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
 
+glm::vec3 red(1.0f, 0.0f, 0.0f);
+glm::vec3 green(0.0f, 1.0f, 0.0f);
+
 int sphereCamera = 0; // 0 for default, 1 for sphere
 
 int Window::width;
@@ -51,7 +55,7 @@ glm::mat4 Window::V;
 Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
 glm::vec4 sphereDir;
-float nick = 1.0f;
+float nick = 0.1f;
 float speed = 0.0f; // Current speed
 float maxSpeed = 0.5f;
 float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
@@ -69,6 +73,8 @@ BounceTransform* bounce;
 
 OBJObject *banana;
 BumpOBJ *orange;
+Cube *bbox;
+Cube *orange_bbox;
 
 GLFWwindow* windowInstance;
 
@@ -93,10 +99,30 @@ void Window::initialize_objects()
 	prevX = 0;
 	prevY = 0;
 
+	///collisions = false;
+
 	srand(time(NULL));
 
 	ISoundEngine* se = createIrrKlangDevice();
 	//se->play2D("../audio/breakout.mp3", GL_TRUE);
+
+	// bounding box for bananas
+	bbox = new Cube();
+	//glm::vec4 p1(-2.0f, -2.0f, 2.0f, 1.0f);
+	//glm::vec4 p2(2.0f, 2.0f, -2.0f, 1.0f);
+	bbox->toWorld = bbox->toWorld * glm::scale(glm::mat4(1.0f), glm::vec3(0.15f, 0.55f, 0.37f));
+	bbox->toWorld = bbox->toWorld * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.3f, 0));
+
+	orange_bbox = new Cube();
+	orange_bbox->toWorld = orange_bbox->toWorld * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	orange_bbox->toWorld = orange_bbox->toWorld * glm::translate(glm::mat4(1.0f), glm::vec3(0, 2.0f, 0));
+	//p1 = orange_bbox->toWorld * p1;
+	//p2 = orange_bbox->toWorld * p2;
+	//p1 /= p1.w;
+	//p2 /= p2.w;
+	//printf("p1: %f, %f, %f\n", p1.x , p1.y, p1.z);
+	//printf("p2: %f, %f, %f\n", p2.x, p2.y, p2.z);
+
 
 	root = new Group();
 	skybox = new Skybox();
@@ -313,9 +339,11 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
 
-	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+
+	//orange_bbox->draw(solidShader, glm::mat4(1.0f), green);
 	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	// Gets events, including input such as keyboard and mouse or window resizing
@@ -356,9 +384,11 @@ void Window::createBananas()
 			z = v1.z;
 		}
 
-		MatrixTransform *mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(x, 2.0f, z)), glm::mat4(1.0f));
+		BounceTransform *mt = new BounceTransform(glm::translate(glm::mat4(1.0f), glm::vec3(x, 2.0f, z)), glm::mat4(1.0f));
+		mt->addChild(bbox);
 		mt->addChild(banana);
-		bounce->addChild(mt);
+		//bounce->addChild(mt);
+		nanners->addChild(mt);
 	}
 }
 

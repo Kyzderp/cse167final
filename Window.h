@@ -31,6 +31,8 @@ public:
 
 	static GLint solidShader;
 
+	///static bool collisions;
+
 	static void initialize_objects();
 	static void clean_up();
 	static GLFWwindow* create_window(int width, int height);
