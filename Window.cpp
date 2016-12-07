@@ -57,11 +57,11 @@ glm::vec3 Window::spherePos;
 glm::vec4 sphereDir;
 float nick = 0.1f;
 float speed = 0.0f; // Current speed
-float maxSpeed = 0.5f;
+float maxSpeed = 0.3f;
 float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
 
 const float friction = 0.95f; // amount to multiply by
-const float gravity = 0.01;
+const float gravity = 0.01f;
 
 Group* root;
 Group* nanners;
@@ -75,6 +75,10 @@ OBJObject *banana;
 BumpOBJ *orange;
 Cube *bbox;
 Cube *orange_bbox;
+Group* Window::housie;
+Group* Window::housies;
+OBJObject* house;
+OBJObject* roof;
 
 GLFWwindow* windowInstance;
 
@@ -85,6 +89,7 @@ int dragging;
 double prevX;
 double prevY;
 glm::vec3 prevPoint;
+int showBB;
 
 int paused;
 
@@ -98,10 +103,11 @@ void Window::initialize_objects()
 	click = 0;
 	prevX = 0;
 	prevY = 0;
+	showBB = 0;
 
 	///collisions = false;
 
-	srand(time(NULL));
+	srand((unsigned)time(NULL));
 
 	ISoundEngine* se = createIrrKlangDevice();
 	//se->play2D("../audio/breakout.mp3", GL_TRUE);
@@ -130,10 +136,30 @@ void Window::initialize_objects()
 	Window::sphere = new Sphere(0);
 	buildings = new QuadPrism();
 
+	house = new OBJObject("../objects/Housie3.obj",
+		"../objects/concrete.ppm",
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		32.0f);
+	house->cull = 0;
+
+	roof = new OBJObject("../objects/Housie3RoofEdit.obj",
+		"../objects/grayroof.ppm",
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		32.0f);
+	housie = new Group();
+	housie->addChild(house);
+	housie->addChild(roof);
+	housies = new Group();
+
 	flor = new Floor();
 	root->addChild(flor);
 
-	spherePos = glm::vec3(0.0f, 1.0f, 0.0f);
+	spherePos = flor->roadVertices[flor->roadVertices.size() / 2] + glm::vec3(0.0f, 1.0f, 0.0f);
+	//spherePos = glm::vec3(0.0f, 1.0f, 0.0f);
 	sphereDir = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 	sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -4.0f) + glm::vec3(0.0f, 2.0f, 0.0f));
 	sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
@@ -187,6 +213,9 @@ void Window::clean_up()
 	delete(banana);
 	delete(orange);
 	delete(buildings);
+	delete(house);
+	delete(housies);
+	delete(housie);
 
 	glDeleteProgram(shaderProgram);
 	glDeleteProgram(skyboxShader);
@@ -290,11 +319,37 @@ void Window::display_callback(GLFWwindow* window)
 			speed = 0;
 	}
 
+	glm::vec3 prevSpherePos = spherePos;
 	spherePos = spherePos + glm::vec3(sphereDir) * speed + glm::vec3(0.0f, vertSpeed, 0.0f);
 	if (spherePos.y < 1.0)
 		spherePos.y = 1.0;
-
 	orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
+
+	// Collision with walls
+	int collided = 0;
+	Block* collisionBlock = flor->blocks[0];
+	for (int i = 0; i < flor->blocks.size(); i++)
+	{
+		if (flor->blocks[i]->doCollisions(1))
+		{
+			// Pretty safe to assume it will only collide with one block at once, because
+			// the roads are wider than the orange
+			collided = 1;
+			collisionBlock = flor->blocks[i];
+			break;
+		}
+	}
+	if (collided) // Give an extra boost to get it out of the range
+	{
+		spherePos = prevSpherePos;
+		spherePos = spherePos + glm::vec3(sphereDir) * speed;
+		// Extra iteration because sometimes it still isn't out of the range on a small angle
+		while (collisionBlock->doCollisions(0))
+		{
+			spherePos = spherePos + glm::vec3(sphereDir) * 0.01f;
+			cout << "iteration ";
+		}
+	}
 
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -339,12 +394,21 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
 
-	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	//orange_bbox->draw(solidShader, glm::mat4(1.0f), green);
 	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+
+	if (showBB)
+	{
+		for (int i = 0; i < flor->blocks.size(); i++)
+			flor->blocks[i]->drawBB(Window::solidShader, glm::mat4(1.0f));
+		cout << "sphereDir: " << sphereDir.x << " " << sphereDir.y << " " << sphereDir.z << endl;
+	}
+
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -416,6 +480,21 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			{
 				sphereCamera = 1;
 				Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
+			}
+		}
+
+		// B to toggle bounding boxes
+		if (key == GLFW_KEY_B)
+		{
+			if (showBB)
+			{
+				showBB = 0;
+				cout << "Turning off bounding boxes" << endl;
+			}
+			else
+			{
+				showBB = 1;
+				cout << "Turning on bounding boxes" << endl;
 			}
 		}
 	}

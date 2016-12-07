@@ -153,7 +153,9 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 
 	// Draw blocks
 	for (int i = 0; i < blocks.size(); i++)
+	{
 		blocks[i]->draw(Window::solidShader, C, glm::vec3(0.5f, 0.5f, 0.5f));
+	}
 
 	// Draw buildings
 	Window::buildings->draw(Window::solidShader, C, glm::vec3(0.7f, 0.7f, 0.7f));
@@ -254,9 +256,10 @@ void Floor::makeRoads()
 
 	// Now the blocks
 	// Select one for park
-	srand(time(NULL));
+	srand((unsigned)time(NULL));
 	int parkX = rand() % xn;
 	int parkZ = rand() % zn;
+
 	for (int x = 0; x < xn; x++)
 	{
 		for (int z = 0; z < zn; z++)
@@ -267,10 +270,12 @@ void Floor::makeRoads()
 			int ul = dl + zn + 1;
 			int ur = ul + 1;
 
-			int park = 0;
+			int type = 0;
 			if (z == parkZ && x == parkX)
-				park = 1;
-			blocks.push_back(new Block(roadVertices[dl], roadVertices[dr], roadVertices[ul], roadVertices[ur], park));
+				type = 1;
+			else if (rand() % (xn * zn) < 3)
+				type = 2;
+			blocks.push_back(new Block(roadVertices[dl], roadVertices[dr], roadVertices[ul], roadVertices[ur], type));
 		}
 	}
 

@@ -12,6 +12,7 @@ OBJObject::OBJObject(const char *filepath, const char *tex_filepath, glm::vec3 m
 {
 	this->default = parse(filepath);
 	this->toWorld = default;
+	this->cull = 1;
 
 	textureMap = loadTexture(tex_filepath);
 
@@ -134,6 +135,14 @@ OBJObject::~OBJObject()
 void OBJObject::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 {
 	glFrontFace(GL_CCW);
+	if (cull)
+	{
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+	}
+	else
+		glDisable(GL_CULL_FACE);
+
 	glUseProgram(shaderProgram);
 
 	// Calculate the combination of the model and view (camera inverse) matrices

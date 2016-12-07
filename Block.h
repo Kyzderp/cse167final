@@ -19,7 +19,8 @@
 class Block
 {
 public:
-	Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four, int isPark);
+	// 0 for normal, 1 for park, 2 for housie
+	Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four, int type);
 	~Block();
 
 	// n = negative, p = positive, assume it's centered at origin
@@ -30,14 +31,23 @@ public:
 	glm::vec3 pn;
 	glm::vec3 pp;
 
-	int isPark;
+	glm::vec3 center;
+	int collidesSphere;
+
+	int type; // 0 for normal, 1 for park, 2 for housie
 
 	glm::mat4 toWorld;
 
 	void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
+	void drawBB(GLuint shaderProgram, glm::mat4 C);
 	void Block::assignVertex(glm::vec3 point, glm::vec3 center);
 	void makeBlock();
 	void makeBuildings();
+	void findSquare();
+	int doCollisions(int reflect);
+	int collision2D(glm::vec2 start, glm::vec2 end);
+	glm::vec2 doReflection(glm::vec3 sideVector);
+
 
 	// These variables are needed for the shader program
 	GLuint VBO, VAO, EBO;
