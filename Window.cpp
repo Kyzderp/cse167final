@@ -83,6 +83,7 @@ int dragging;
 double prevX;
 double prevY;
 glm::vec3 prevPoint;
+int showBB;
 
 int paused;
 
@@ -96,6 +97,7 @@ void Window::initialize_objects()
 	click = 0;
 	prevX = 0;
 	prevY = 0;
+	showBB = 0;
 
 	srand((unsigned)time(NULL));
 
@@ -372,6 +374,14 @@ void Window::display_callback(GLFWwindow* window)
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
+	if (showBB)
+	{
+		for (int i = 0; i < flor->blocks.size(); i++)
+			flor->blocks[i]->drawBB(Window::solidShader, glm::mat4(1.0f));
+		cout << "sphereDir: " << sphereDir.x << " " << sphereDir.y << " " << sphereDir.z << endl;
+	}
+
+
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
 	// Swap buffers
@@ -440,6 +450,21 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			{
 				sphereCamera = 1;
 				Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
+			}
+		}
+
+		// B to toggle bounding boxes
+		if (key == GLFW_KEY_B)
+		{
+			if (showBB)
+			{
+				showBB = 0;
+				cout << "Turning off bounding boxes" << endl;
+			}
+			else
+			{
+				showBB = 1;
+				cout << "Turning on bounding boxes" << endl;
 			}
 		}
 	}

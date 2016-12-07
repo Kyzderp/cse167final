@@ -155,7 +155,6 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	for (int i = 0; i < blocks.size(); i++)
 	{
 		blocks[i]->draw(Window::solidShader, C, glm::vec3(0.5f, 0.5f, 0.5f));
-		blocks[i]->drawBB(Window::solidShader, C);
 	}
 
 	// Draw buildings

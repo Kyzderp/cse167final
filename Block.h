@@ -46,6 +46,8 @@ public:
 	void findSquare();
 	int doCollisions(int reflect);
 	int collision2D(glm::vec2 start, glm::vec2 end);
+	glm::vec2 doReflection(glm::vec3 sideVector);
+
 
 	// These variables are needed for the shader program
 	GLuint VBO, VAO, EBO;
