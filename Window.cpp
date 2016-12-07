@@ -291,6 +291,7 @@ void Window::display_callback(GLFWwindow* window)
 			speed = 0;
 	}
 
+	glm::vec3 prevSpherePos = spherePos;
 	spherePos = spherePos + glm::vec3(sphereDir) * speed + glm::vec3(0.0f, vertSpeed, 0.0f);
 	if (spherePos.y < 1.0)
 		spherePos.y = 1.0;
@@ -312,10 +313,14 @@ void Window::display_callback(GLFWwindow* window)
 	}
 	if (collided) // Give an extra boost to get it out of the range
 	{
-		//spherePos = spherePos + glm::vec3(sphereDir) * speed;
+		spherePos = prevSpherePos;
+		spherePos = spherePos + glm::vec3(sphereDir) * speed;
 		// Extra iteration because sometimes it still isn't out of the range on a small angle
 		while (collisionBlock->doCollisions(0))
+		{
 			spherePos = spherePos + glm::vec3(sphereDir) * 0.01f;
+			cout << "iteration ";
+		}
 	}
 
 	// Clear the color and depth buffers

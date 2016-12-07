@@ -32,12 +32,14 @@ public:
 	glm::vec3 pp;
 
 	glm::vec3 center;
+	int collidesSphere;
 
 	int type; // 0 for normal, 1 for park, 2 for housie
 
 	glm::mat4 toWorld;
 
 	void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
+	void drawBB(GLuint shaderProgram, glm::mat4 C);
 	void Block::assignVertex(glm::vec3 point, glm::vec3 center);
 	void makeBlock();
 	void makeBuildings();
