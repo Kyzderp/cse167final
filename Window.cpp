@@ -361,13 +361,15 @@ void Window::display_callback(GLFWwindow* window)
 	}
 	if (collided) // Give an extra boost to get it out of the range
 	{
+		se->play2D("../audio/thud.wav", GL_FALSE);
+		color = red;
 		spherePos = prevSpherePos;
 		spherePos = spherePos + glm::vec3(sphereDir) * speed;
 		// Extra iteration because sometimes it still isn't out of the range on a small angle
 		while (collisionBlock->doCollisions(0))
 		{
 			spherePos = spherePos + glm::vec3(sphereDir) * 0.01f;
-			cout << "iteration ";
+			//cout << "iteration ";
 		}
 	}
 
@@ -400,8 +402,6 @@ void Window::display_callback(GLFWwindow* window)
 	//orange_bbox->draw(solidShader, glm::mat4(1.0f), green);
 	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
-
-
 	// Draw orange
 	glUseProgram(bumpShader);
 	glUniform3f(viewPosbump, cam_pos.x, cam_pos.y, cam_pos.z);
@@ -418,7 +418,7 @@ void Window::display_callback(GLFWwindow* window)
 	if (sphereCamera)
 	{
 		// from pov of sphere
-		sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -4.0f) + glm::vec3(0.0f, 2.0f, 0.0f));
+		sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -5.0f) + glm::vec3(0.0f, 3.0f, 0.0f));
 		sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
 		Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
 		glUniform3f(viewPosLoc, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
@@ -509,7 +509,7 @@ void Window::createBananas()
 		p1 /= p1.w;
 		p2 /= p2.w;
 
-		int height = rand() % 3 + 1.5;
+		int height = rand() % 5 + 1.5;
 
 		BounceTransform *position = new BounceTransform(glm::translate(glm::mat4(1.0f), glm::vec3(x, height, z)), glm::mat4(1.0f));
 		MatrixTransform *rotation = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
