@@ -47,8 +47,9 @@ void BounceTransform::update()
 			else
 				angle -= angleIncrement;
 		}
-
-		translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, angle, 0.0f));
+		int dir = 2 * angleUp - 1;
+		
+		translate = translate * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, angleIncrement * dir, 0.0f));
 	}
 
 	// Children

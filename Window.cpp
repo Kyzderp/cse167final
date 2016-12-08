@@ -2,10 +2,11 @@
 #include "Skybox.h"
 #include <iostream>
 #include "Floor.h"
+#include "Cube.h"
 #include "OBJObject.h"
 #include "BumpOBJ.h"
 #include "BounceTransform.h"
-#include "GLFWStarterProject/include/irrKlang.h"
+#include "BoundedGroup.h"
 #include <time.h>       /* time */
 
 using namespace std;
@@ -40,10 +41,20 @@ glm::vec3 sphere_cam_pos(0.0f, 5.0f, 20.0f);		// e  | Position of camera
 glm::vec3 sphere_cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
 glm::vec3 sphere_cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
 
+glm::vec3 color;
+glm::vec3 red(1.0f, 0.0f, 0.0f);
+glm::vec3 green(0.0f, 1.0f, 0.0f);
+
 int sphereCamera = 0; // 0 for default, 1 for sphere
 
 int Window::width;
 int Window::height;
+
+bool Window::inCollision;
+glm::vec3 boxMax;
+glm::vec3 boxMin;
+glm::vec3 Window::orangeMax;
+glm::vec3 Window::orangeMin;
 
 glm::mat4 Window::P;
 glm::mat4 Window::V;
@@ -51,7 +62,7 @@ glm::mat4 Window::V;
 Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
 glm::vec4 Window::sphereDir;
-float nick = 1.0f;
+float nick = 0.05f;
 float speed = 0.0f; // Current speed
 float maxSpeed = 0.3f;
 float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
@@ -69,10 +80,14 @@ BounceTransform* bounce;
 
 OBJObject *banana;
 BumpOBJ *orange;
+Cube *bbox;
+Cube *orange_bbox;
 Group* Window::housie;
 Group* Window::housies;
 OBJObject* house;
 OBJObject* roof;
+
+ISoundEngine* Window::se;
 
 GLFWwindow* windowInstance;
 
@@ -83,11 +98,9 @@ int dragging;
 double prevX;
 double prevY;
 glm::vec3 prevPoint;
-int showBB;
+int Window::showBB;
 
 int paused;
-
-using namespace irrklang;
 
 void Window::initialize_objects()
 {
@@ -99,10 +112,35 @@ void Window::initialize_objects()
 	prevY = 0;
 	showBB = 0;
 
+	Window::inCollision = false;
+
 	srand((unsigned)time(NULL));
 
-	ISoundEngine* se = createIrrKlangDevice();
-	//se->play2D("../audio/breakout.mp3", GL_TRUE);
+	se = createIrrKlangDevice();
+	se->play2D("../audio/breakout.mp3", GL_TRUE);
+
+	// bounding box for bananas
+	bbox = new Cube();
+
+	glm::vec4 p1(-2.0f, -2.0f, 2.0f, 1.0f);
+	glm::vec4 p2(2.0f, 2.0f, -2.0f, 1.0f);
+
+	bbox->toWorld = bbox->toWorld * glm::scale(glm::mat4(1.0f), glm::vec3(0.4f, 0.55f, 0.37f));
+	bbox->toWorld = bbox->toWorld * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.3f, 0));
+
+	orange_bbox = new Cube();
+	orange_bbox->toWorld = orange_bbox->toWorld * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	p1 = bbox->toWorld * p1;
+	p2 = bbox->toWorld * p2;
+	p1 /= p1.w;
+	p2 /= p2.w;
+
+	boxMin = glm::vec3(p1);
+	boxMax = glm::vec3(p2);
+
+	//printf("p1: %f, %f, %f\n", p1.x , p1.y, p1.z);
+	//printf("p2: %f, %f, %f\n", p2.x, p2.y, p2.z);
+
 
 	root = new Group();
 	skybox = new Skybox();
@@ -157,10 +195,14 @@ void Window::initialize_objects()
 
 	nanners = new Group();
 	//rotation = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
-	bounce = new BounceTransform(glm::mat4(1.0f), glm::mat4(1.0f));
-	//rotation->addChild(banana);
-	//bounce->addChild(rotation);
-	nanners->addChild(bounce);
+	//bounce = new BounceTransform(glm::mat4(1.0f), glm::mat4(1.0f));
+	//nanners->addChild(bounce);
+	//nick
+	MatrixTransform *r = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
+
+	//r->addChild(banana);
+	//nanners->addChild(r);
+	//nanners->addChild(bbox);
 
 	createBananas();
 
@@ -268,6 +310,9 @@ void Window::idle_callback()
 
 void Window::display_callback(GLFWwindow* window)
 {
+	Window::inCollision = false;
+	color = green;
+
 	// I'm putting these here because if I put it in key callback it's very slow and weird to control
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
 		sphereDir = glm::rotate(glm::mat4(1.0f), 0.05f * nick, glm::vec3(0.0f, 1.0f, 0.0f)) * sphereDir;
@@ -300,36 +345,61 @@ void Window::display_callback(GLFWwindow* window)
 	orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
 
 	// Collision with walls
-	int collided = 0;
-	Block* collisionBlock = flor->blocks[0];
-	for (int i = 0; i < flor->blocks.size(); i++)
-	{
-		if (flor->blocks[i]->doCollisions(1))
-		{
-			// Pretty safe to assume it will only collide with one block at once, because
-			// the roads are wider than the orange
-			collided = 1;
-			collisionBlock = flor->blocks[i];
-			break;
-		}
-	}
-	if (collided) // Give an extra boost to get it out of the range
-	{
-		spherePos = prevSpherePos;
-		spherePos = spherePos + glm::vec3(sphereDir) * speed;
-		// Extra iteration because sometimes it still isn't out of the range on a small angle
-		while (collisionBlock->doCollisions(0))
-		{
-			spherePos = spherePos + glm::vec3(sphereDir) * 0.01f;
-			cout << "iteration ";
-		}
-	}
+	//int collided = 0;
+	//Block* collisionBlock = flor->blocks[0];
+	//for (int i = 0; i < flor->blocks.size(); i++)
+	//{
+	//	if (flor->blocks[i]->doCollisions(1))
+	//	{
+	//		// Pretty safe to assume it will only collide with one block at once, because
+	//		// the roads are wider than the orange
+	//		collided = 1;
+	//		collisionBlock = flor->blocks[i];
+	//		break;
+	//	}
+	//}
+	//if (collided) // Give an extra boost to get it out of the range
+	//{
+	//	spherePos = prevSpherePos;
+	//	spherePos = spherePos + glm::vec3(sphereDir) * speed;
+	//	// Extra iteration because sometimes it still isn't out of the range on a small angle
+	//	while (collisionBlock->doCollisions(0))
+	//	{
+	//		spherePos = spherePos + glm::vec3(sphereDir) * 0.01f;
+	//		cout << "iteration ";
+	//	}
+	//}
+
+	Window::orangeMax = glm::vec3(glm::translate(glm::mat4(1.0f), Window::spherePos) * glm::vec4(boxMax, 1.0f));
+	Window::orangeMin = glm::vec3(glm::translate(glm::mat4(1.0f), Window::spherePos) * glm::vec4(boxMin, 1.0f));
 
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Render skybox
 	skybox->draw(skyboxShader);
+
+	// now render objects
+	glUseProgram(shaderProgram);
+
+	// Set up light(s)
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.direction"), -0.2f, -1.0f, -0.7f);
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.ambient"), 0.3f, 0.3f, 0.3f);
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
+	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
+
+	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	//housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+
+	// Draw buildings
+	//buildings->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.7f, 0.7f, 0.7f));
+
+	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+
+	//orange_bbox->draw(solidShader, glm::mat4(1.0f), green);
+	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+
+
 
 	// Draw orange
 	glUseProgram(bumpShader);
@@ -339,6 +409,10 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.ambient"), 0.3f, 0.3f, 0.3f);
 	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
 	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
+
+	if (Window::inCollision) {
+		color = red;
+	}
 
 	if (sphereCamera)
 	{
@@ -384,7 +458,7 @@ void Window::display_callback(GLFWwindow* window)
 	{
 		for (int i = 0; i < flor->blocks.size(); i++)
 			flor->blocks[i]->drawBB(Window::solidShader, glm::mat4(1.0f));
-		//cout << "sphereDir: " << sphereDir.x << " " << sphereDir.y << " " << sphereDir.z << endl;
+		orange_bbox->draw(solidShader, glm::translate(glm::mat4(1.0f), spherePos), color);
 	}
 
 
@@ -400,7 +474,7 @@ void Window::createBananas()
 	std::vector<unsigned int> rIndices = flor->roadIndices;
 
 	int numNanners = rand() % 12 + 10;
-
+	//int numNanners = 1;
 	for (int i = 0; i < numNanners; i++) {
 
 		int randIdx = rand() % rIndices.size() + 1; // any random index
@@ -425,10 +499,26 @@ void Window::createBananas()
 			x = v1.x;
 			z = v1.z;
 		}
+		// original cube coordinates before being changed
+		glm::vec4 p1(-2.0f, -2.0f, 2.0f, 1.0f);
+		glm::vec4 p2(2.0f, 2.0f, -2.0f, 1.0f);
+		// First stretch it to the correct size
+		p1 = bbox->toWorld * p1;
+		p2 = bbox->toWorld * p2;
+		p1 /= p1.w;
+		p2 /= p2.w;
 
-		MatrixTransform *mt = new MatrixTransform(glm::translate(glm::mat4(1.0f), glm::vec3(x, 2.0f, z)), glm::mat4(1.0f));
-		mt->addChild(banana);
-		bounce->addChild(mt);
+		int height = rand() % 3 + 1.5;
+
+		BounceTransform *position = new BounceTransform(glm::translate(glm::mat4(1.0f), glm::vec3(x, height, z)), glm::mat4(1.0f));
+		MatrixTransform *rotation = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
+		BoundedGroup *bg = new BoundedGroup(glm::vec3(p1), glm::vec3(p2));
+
+		rotation->addChild(banana);
+		position->addChild(bg);
+		bg->addChild(rotation);
+		bg->addChild(bbox);
+		nanners->addChild(position);
 	}
 }
 

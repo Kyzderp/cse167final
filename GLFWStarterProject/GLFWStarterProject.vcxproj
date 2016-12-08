@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\Block.h" />
     <ClInclude Include="..\BounceTransform.h" />
+    <ClInclude Include="..\BoundedGroup.h" />
     <ClInclude Include="..\BumpOBJ.h" />
     <ClInclude Include="..\Cube.h" />
     <ClInclude Include="..\Floor.h" />
@@ -39,6 +40,7 @@
   <ItemGroup>
     <ClCompile Include="..\Block.cpp" />
     <ClCompile Include="..\BounceTransform.cpp" />
+    <ClCompile Include="..\BoundedGroup.cpp" />
     <ClCompile Include="..\Cube.cpp" />
     <ClCompile Include="..\Floor.cpp" />
     <ClCompile Include="..\Geode.cpp" />
