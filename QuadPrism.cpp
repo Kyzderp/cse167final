@@ -1,6 +1,7 @@
 #include "QuadPrism.h"
 #include "Window.h"
 #include <iostream>
+#include "OBJObject.h"
 
 using namespace std;
 
@@ -8,6 +9,7 @@ QuadPrism::QuadPrism()
 {
 	toWorld = glm::mat4(1.0f);
 	numBuildings = 0;
+	buildingTexture = OBJObject::loadTexture("../objects/apartment.ppm");
 }
 
 QuadPrism::~QuadPrism()
@@ -15,6 +17,7 @@ QuadPrism::~QuadPrism()
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
+	glDeleteBuffers(1, &TBO);
 }
 
 void QuadPrism::assignVertex(glm::vec3 point, glm::vec3 center)
@@ -58,6 +61,9 @@ void QuadPrism::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, buildingTexture);
 	
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
@@ -117,6 +123,16 @@ void QuadPrism::makeQuadPrism()
 	bufferVertices.push_back(pn + glm::vec3(0.0f, height, 0.0f));
 	bufferVertices.push_back(nn + glm::vec3(0.0f, height, 0.0f));
 
+	textureCoords.push_back(glm::vec2(0.0, 1.0));
+	textureCoords.push_back(glm::vec2(1.0, 1.0));
+	textureCoords.push_back(glm::vec2(1.0, 0.0));
+	textureCoords.push_back(glm::vec2(0.0, 0.0));
+
+	textureCoords.push_back(glm::vec2(1.0, 1.0));
+	textureCoords.push_back(glm::vec2(0.0, 1.0));
+	textureCoords.push_back(glm::vec2(0.0, 0.0));
+	textureCoords.push_back(glm::vec2(1.0, 0.0));
+
 	// Keep repeating D:
 	unsigned int blah[36] = { 0, 1, 2, 2, 3, 0,
 		// Top face
@@ -135,7 +151,7 @@ void QuadPrism::makeQuadPrism()
 
 	bufferIndices.insert(bufferIndices.end(), blah, blah + 36);
 
-	colors.push_back(((float)rand() / (float)RAND_MAX) * 0.35 + 0.5);
+	colors.push_back(((float)rand() / (float)RAND_MAX) * 0.35f + 0.5f);
 
 	numBuildings++;
 }
@@ -147,20 +163,29 @@ void QuadPrism::makeBuffers()
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
+	glGenBuffers(1, &NBO);
+	glGenBuffers(1, &TBO);
 
 	// Bind the Vertex Array Object (VAO) first, then bind the associated buffers to it.
 	// Consider the VAO as a container for all your buffers.
 	glBindVertexArray(VAO);
 
-	// Now bind a VBO to it as a GL_ARRAY_BUFFER. The GL_ARRAY_BUFFER is an array containing relevant data to what
-	// you want to draw, such as vertices, normals, colors, etc.
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	// glBufferData populates the most recently bound buffer with data starting at the 3rd argument and ending after
 	// the 2nd argument number of indices. How does OpenGL know how long an index spans? Go to glVertexAttribPointer.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, bufferVertices.size() * 3 * 4, bufferVertices.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, NBO);
+	glBufferData(GL_ARRAY_BUFFER, bufferVertices.size() * 3 * 4, bufferVertices.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, TBO);
+	glBufferData(GL_ARRAY_BUFFER, textureCoords.size() * 2 * 4, textureCoords.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 
 	// We've sent the vertex data over to OpenGL, but there's still something missing.
 	// In what order should it draw those vertices? That's why we'll need a GL_ELEMENT_ARRAY_BUFFER for this.

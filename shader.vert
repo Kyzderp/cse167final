@@ -18,7 +18,7 @@ void main()
 	// once/if we add a modelview for objects
 	FragPos = vec3(modelview * vec4(position, 1.0f));
 
-	norm = mat3(transpose(inverse(modelview))) * normal;
+	norm = normalize(mat3(transpose(inverse(modelview))) * normal);
 
 	tCoords = texCoords;
 }

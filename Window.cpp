@@ -369,6 +369,10 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
 
 	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+
+	// Draw buildings
+	buildings->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.7f, 0.7f, 0.7f));
+
 	housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
@@ -378,7 +382,7 @@ void Window::display_callback(GLFWwindow* window)
 	{
 		for (int i = 0; i < flor->blocks.size(); i++)
 			flor->blocks[i]->drawBB(Window::solidShader, glm::mat4(1.0f));
-		cout << "sphereDir: " << sphereDir.x << " " << sphereDir.y << " " << sphereDir.z << endl;
+		//cout << "sphereDir: " << sphereDir.x << " " << sphereDir.y << " " << sphereDir.z << endl;
 	}
 
 

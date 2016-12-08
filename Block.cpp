@@ -264,7 +264,7 @@ int Block::doCollisions(int reflect)
 	{
 		if (reflect)
 		{
-			cout << "collision with right side" << endl;
+			//cout << "collision with right side" << endl;
 			totalReflection = doReflection(pp - pn);
 		}
 		collided++;
@@ -273,7 +273,7 @@ int Block::doCollisions(int reflect)
 	{
 		if (reflect)
 		{
-			cout << "collision with top side" << endl;
+			//cout << "collision with top side" << endl;
 			totalReflection = doReflection(np - pp);
 		}
 		collided++;
@@ -282,7 +282,7 @@ int Block::doCollisions(int reflect)
 	{
 		if (reflect)
 		{
-			cout << "collision with bottom side" << endl;
+			//cout << "collision with bottom side" << endl;
 			totalReflection = doReflection(pn - nn);
 		}
 		collided++;
@@ -291,7 +291,7 @@ int Block::doCollisions(int reflect)
 	{
 		if (reflect)
 		{
-			cout << "collision with left side" << endl;
+			//cout << "collision with left side" << endl;
 			totalReflection = doReflection(nn - np);
 		}
 		collided++;
