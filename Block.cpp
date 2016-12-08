@@ -1,6 +1,7 @@
 #include "Block.h"
 #include "Window.h"
 #include <iostream>
+#include "OBJObject.h"
 
 using namespace std;
 
@@ -8,6 +9,7 @@ GLuint BlockTexture;
 
 Block::Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four, int type)
 {
+	saladTexture = OBJObject::loadTexture("../objects/salad.ppm");
 	this->collidesSphere = 0;
 	this->type = type;
 	toWorld = glm::mat4(1.0f);
@@ -36,24 +38,50 @@ Block::Block(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four, int 
 	if (type == 0)
 		makeBuildings();
 
+	glGenVertexArrays(1, &bbVAO);
+	glGenBuffers(1, &bbVBO);
+	glGenBuffers(1, &bbEBO);
+
+	glBindVertexArray(bbVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, bbVBO);
+	glBufferData(GL_ARRAY_BUFFER, bufferVertices.size() * 3 * 4, bufferVertices.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bbEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, bbIndices.size() * 4, bbIndices.data(), GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+
 	// Create array object and buffers. Remember to delete your buffers when the object is destroyed!
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
+	glGenBuffers(1, &TBO);
+	glGenBuffers(1, &NBO);
 
 	// Bind the Vertex Array Object (VAO) first, then bind the associated buffers to it.
 	// Consider the VAO as a container for all your buffers.
 	glBindVertexArray(VAO);
 
-	// Now bind a VBO to it as a GL_ARRAY_BUFFER. The GL_ARRAY_BUFFER is an array containing relevant data to what
-	// you want to draw, such as vertices, normals, colors, etc.
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	// glBufferData populates the most recently bound buffer with data starting at the 3rd argument and ending after
 	// the 2nd argument number of indices. How does OpenGL know how long an index spans? Go to glVertexAttribPointer.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, bufferVertices.size() * 3 * 4, bufferVertices.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, NBO);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * 3 * 4, normals.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, TBO);
+	glBufferData(GL_ARRAY_BUFFER, textureCoords.size() * 2 * 4, textureCoords.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 
 					 // We've sent the vertex data over to OpenGL, but there's still something missing.
 					 // In what order should it draw those vertices? That's why we'll need a GL_ELEMENT_ARRAY_BUFFER for this.
@@ -72,6 +100,8 @@ Block::~Block()
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
+	glDeleteBuffers(1, &NBO);
+	glDeleteBuffers(1, &TBO);
 }
 
 void Block::assignVertex(glm::vec3 point, glm::vec3 center)
@@ -113,12 +143,13 @@ void Block::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	// Get the location of the uniform variables "projection" and "modelview"
 	uProjection = glGetUniformLocation(shaderProgram, "projection");
 	uModelview = glGetUniformLocation(shaderProgram, "modelview");
-	GLuint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
-	glUniform3f(colorLoc, color.x, color.y, color.z);
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
 	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, saladTexture);
+
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
 	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
@@ -157,9 +188,9 @@ void Block::drawBB(GLuint shaderProgram, glm::mat4 C)
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
 
 	// Now draw the cube. We simply need to bind the VAO associated with it.
-	glBindVertexArray(VAO);
+	glBindVertexArray(bbVAO);
 	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
-	glDrawElements(GL_LINES, 36, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_LINES, bbIndices.size(), GL_UNSIGNED_INT, 0);
 	// Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
 	glBindVertexArray(0);
 }
@@ -178,10 +209,23 @@ void Block::makeBlock()
 	np = np + glm::normalize((nn - np) + (pp - np)) * width;
 	pp = pp + glm::normalize((np - pp) + (pn - pp)) * width;
 
+	// Bounding box for housie
+	if (type == 3)
+	{
+		float housieX = 5.0f;
+		float housieZ = 7.0f;
+		nn = glm::vec3(center.x - housieX, 0.0f, center.z - housieZ);
+		pn = glm::vec3(center.x + housieX, 0.0f, center.z - housieZ);
+		np = glm::vec3(center.x - housieX, 0.0f, center.z + housieZ);
+		pp = glm::vec3(center.x + housieX, 0.0f, center.z + housieZ);
+	}
+
 	// Now goes in buffer
 	float blockHeight = 0.2f;
 	if (type == 0)
 		blockHeight = 12.0f;
+	if (type == 3)
+		blockHeight = 15.0f;
 	bufferVertices.push_back(np);
 	bufferVertices.push_back(pp);
 	bufferVertices.push_back(pp + glm::vec3(0.0f, blockHeight, 0.0f));
@@ -191,6 +235,43 @@ void Block::makeBlock()
 	bufferVertices.push_back(pn);
 	bufferVertices.push_back(pn + glm::vec3(0.0f, blockHeight, 0.0f));
 	bufferVertices.push_back(nn + glm::vec3(0.0f, blockHeight, 0.0f));
+
+	// Bounding box indices
+	unsigned int blah[24] =
+	{
+		// side
+		0, 1, 1, 2, 2, 3, 3, 0,
+		// side
+		4, 5, 5, 6, 6, 7, 7, 4,
+		// connect
+		0, 4, 1, 5, 2, 6, 3, 7
+	};
+	bbIndices.insert(bbIndices.end(), blah, blah + 24);
+
+
+	// normals
+	glm::vec3 nCenter = (np + pp + nn + pn) * 0.25f;
+	nCenter.y += blockHeight / 2;
+	normals.push_back(np - nCenter);
+	normals.push_back(pp - nCenter);
+	normals.push_back(pp + glm::vec3(0.0f, blockHeight, 0.0f) - nCenter);
+	normals.push_back(np + glm::vec3(0.0f, blockHeight, 0.0f) - nCenter);
+
+	normals.push_back(nn - nCenter);
+	normals.push_back(pn - nCenter);
+	normals.push_back(pn + glm::vec3(0.0f, blockHeight, 0.0f) - nCenter);
+	normals.push_back(nn + glm::vec3(0.0f, blockHeight, 0.0f) - nCenter);
+
+	// tex coords
+	textureCoords.push_back(glm::vec2(0.0, 1.0));
+	textureCoords.push_back(glm::vec2(1.0, 1.0));
+	textureCoords.push_back(glm::vec2(1.0, 1.0));
+	textureCoords.push_back(glm::vec2(0.0, 1.0));
+
+	textureCoords.push_back(glm::vec2(0.0, 0.0));
+	textureCoords.push_back(glm::vec2(1.0, 0.0));
+	textureCoords.push_back(glm::vec2(1.0, 0.0));
+	textureCoords.push_back(glm::vec2(0.0, 0.0));
 }
 
 void Block::makeBuildings()
@@ -260,7 +341,7 @@ int Block::doCollisions(int reflect)
 
 	glm::vec2 totalReflection = glm::vec2(0.0f);
 	int collided = 0;
-	if (collision2D(glm::vec2(pp.x, pp.z), glm::vec2(pn.x, pn.z)))
+	if (collision2D(glm::vec2(pn.x, pn.z), glm::vec2(pp.x, pp.z)))
 	{
 		if (reflect)
 		{
@@ -269,7 +350,7 @@ int Block::doCollisions(int reflect)
 		}
 		collided++;
 	}
-	if (collision2D(glm::vec2(pp.x, pp.z), glm::vec2(np.x, np.z)))
+	else if (collision2D(glm::vec2(pp.x, pp.z), glm::vec2(np.x, np.z)))
 	{
 		if (reflect)
 		{
@@ -278,7 +359,7 @@ int Block::doCollisions(int reflect)
 		}
 		collided++;
 	}
-	if (collision2D(glm::vec2(nn.x, nn.z), glm::vec2(pn.x, pn.z)))
+	else if (collision2D(glm::vec2(nn.x, nn.z), glm::vec2(pn.x, pn.z)))
 	{
 		if (reflect)
 		{
@@ -287,7 +368,7 @@ int Block::doCollisions(int reflect)
 		}
 		collided++;
 	}
-	if (collision2D(glm::vec2(nn.x, nn.z), glm::vec2(np.x, np.z)))
+	else if (collision2D(glm::vec2(np.x, np.z), glm::vec2(nn.x, nn.z)))
 	{
 		if (reflect)
 		{
@@ -301,7 +382,9 @@ int Block::doCollisions(int reflect)
 	{
 		this->collidesSphere = collided;
 		if (collided)
+		{
 			Window::sphereDir = glm::normalize(glm::vec4(totalReflection.x, 0.0f, totalReflection.y, 0.0f));
+		}
 	}
 	return collided;
 }
@@ -315,10 +398,20 @@ glm::vec2 Block::doReflection(glm::vec3 sideVector)
 
 int Block::collision2D(glm::vec2 start, glm::vec2 end)
 {
+	// Negative determinant = to the right
+	glm::vec2 d = end - start;
+	//glm::vec2 relSpherePos = glm::vec2(Window::spherePos.x, Window::spherePos.z) - start;
+	glm::vec2 flatSphereDir = glm::vec2(Window::sphereDir.x, Window::sphereDir.z);
+
+	//float determinant = d.x * relSpherePos.y - d.y * relSpherePos.x;
+	float determinant = d.x * flatSphereDir.y - d.y * flatSphereDir.x;
+	//if (determinant > 0.0f)
+	if (determinant < 0.0f)
+		return 0;
+
 	float r = 1.0f; // this is the sphere radius. hardcoded so whatever.
 	// http://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
 
-	glm::vec2 d = end - start;
 	glm::vec2 f = start - glm::vec2(Window::spherePos.x, Window::spherePos.z);
 
 

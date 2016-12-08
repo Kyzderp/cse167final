@@ -13,7 +13,7 @@ Floor::Floor()
 	// Google API key, but this seems too hard to use AIzaSyBesNtg7B1lJXiXAB1COwRSNawtzO5uVwU
 
 	toWorld = glm::mat4(1.0f);
-	size = 50.0f;
+	size = 200.0f;
 
 	makeFloor();
 
@@ -150,12 +150,6 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 
 	// Draw roads
 	drawRoads(Window::solidShader, C, glm::vec3(1.0f, 0.0f, 0.0f));
-
-	// Draw blocks
-	for (int i = 0; i < blocks.size(); i++)
-	{
-		blocks[i]->draw(Window::solidShader, C, glm::vec3(0.5f, 0.5f, 0.5f));
-	}
 }
 
 void Floor::drawRoads(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
@@ -197,7 +191,7 @@ void Floor::makeFloor()
 	indices.push_back(3);
 	indices.push_back(0);
 
-	float scale = 8.0f;
+	float scale = 32.0f;
 	texCoords.push_back(glm::vec2(1.0f, 1.0f) * scale);
 	texCoords.push_back(glm::vec2(-1.0f, 1.0f) * scale);
 	texCoords.push_back(glm::vec2(-1.0f, -1.0f) * scale);
@@ -208,8 +202,8 @@ void Floor::makeFloor()
 
 void Floor::makeRoads()
 {
-	int xn = 4;
-	int zn = 4;
+	int xn = 16;
+	int zn = 16;
 	float xdist = size * 2.0f / xn;
 	float zdist = size * 2.0f / zn;
 
@@ -270,9 +264,11 @@ void Floor::makeRoads()
 			int type = 0;
 			if (z == parkZ && x == parkX)
 				type = 1;
-			else if (rand() % (xn * zn) < 3)
+			else if (rand() % 20 < 3)
 				type = 2;
 			blocks.push_back(new Block(roadVertices[dl], roadVertices[dr], roadVertices[ul], roadVertices[ur], type));
+			if (type == 2)
+				blocks.push_back(new Block(roadVertices[dl], roadVertices[dr], roadVertices[ul], roadVertices[ur], 3));
 		}
 	}
 

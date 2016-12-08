@@ -33,8 +33,9 @@ public:
 
 	glm::vec3 center;
 	int collidesSphere;
+	GLuint saladTexture;
 
-	int type; // 0 for normal, 1 for park, 2 for housie
+	int type; // 0 for normal, 1 for park, 2 for housie, 3 for fake block for bb
 
 	glm::mat4 toWorld;
 
@@ -50,7 +51,8 @@ public:
 
 
 	// These variables are needed for the shader program
-	GLuint VBO, VAO, EBO;
+	GLuint VBO, VAO, EBO, NBO, TBO;
+	GLuint bbVAO, bbVBO, bbEBO;
 	GLuint uProjection, uModelview;
 
 
@@ -58,6 +60,10 @@ public:
 	// to use a 2-dimensional array, since the layout in memory is the same as a 1-dimensional array.
 	// This just looks nicer since it's easy to tell what coordinates/indices belong where.
 	std::vector<glm::vec3> bufferVertices;
+	std::vector<glm::vec2> textureCoords;
+	std::vector<glm::vec3> normals;
+
+	std::vector<unsigned int> bbIndices;
 
 	// Note that GL_QUADS is deprecated in modern OpenGL (and removed from OSX systems).
 	// This is why we need to draw each face as 2 triangles instead of 1 quadrilateral

@@ -34,7 +34,10 @@ public:
 
 	glm::mat4 toWorld;
 
-	GLuint buildingTexture;
+	GLuint apartmentTexture;
+	GLuint archWindowTexture;
+	GLuint applestoreTexture;
+	GLuint chipotleTexture;
 
 	void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
 	void assignVertex(glm::vec3 point, glm::vec3 center);
@@ -51,9 +54,11 @@ public:
 	// to use a 2-dimensional array, since the layout in memory is the same as a 1-dimensional array.
 	// This just looks nicer since it's easy to tell what coordinates/indices belong where.
 	std::vector<glm::vec3> bufferVertices;
+	std::vector<glm::vec3> normals;
 	std::vector<unsigned int> bufferIndices;
 	std::vector<float> colors;
 	std::vector<glm::vec2> textureCoords;
+	std::vector<GLuint> textures;
 };
 
 #endif

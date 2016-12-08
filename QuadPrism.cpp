@@ -9,7 +9,10 @@ QuadPrism::QuadPrism()
 {
 	toWorld = glm::mat4(1.0f);
 	numBuildings = 0;
-	buildingTexture = OBJObject::loadTexture("../objects/apartment.ppm");
+	apartmentTexture = OBJObject::loadTexture("../objects/apartment.ppm");
+	archWindowTexture = OBJObject::loadTexture("../objects/archwindow.ppm");
+	applestoreTexture = OBJObject::loadTexture("../objects/applestore.ppm");
+	chipotleTexture = OBJObject::loadTexture("../objects/chipotle.ppm");
 }
 
 QuadPrism::~QuadPrism()
@@ -62,9 +65,6 @@ void QuadPrism::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, buildingTexture);
-	
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
 	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
@@ -72,6 +72,9 @@ void QuadPrism::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 
 	for (int i = 0; i < numBuildings; i++)
 	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textures[i]);
+
 		glUniform3f(colorLoc, colors[i], colors[i], colors[i]);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)(36 * i * 4));
 	}
@@ -123,15 +126,50 @@ void QuadPrism::makeQuadPrism()
 	bufferVertices.push_back(pn + glm::vec3(0.0f, height, 0.0f));
 	bufferVertices.push_back(nn + glm::vec3(0.0f, height, 0.0f));
 
+	// Normals
+	glm::vec3 nCenter = (np + pp + nn + pn) * 0.25f;
+	nCenter.y += height / 2;
+	normals.push_back(np - nCenter);
+	normals.push_back(pp - nCenter);
+	normals.push_back(pp + glm::vec3(0.0f, height, 0.0f) - nCenter);
+	normals.push_back(np + glm::vec3(0.0f, height, 0.0f) - nCenter);
+
+	normals.push_back(nn - nCenter);
+	normals.push_back(pn - nCenter);
+	normals.push_back(pn + glm::vec3(0.0f, height, 0.0f) - nCenter);
+	normals.push_back(nn + glm::vec3(0.0f, height, 0.0f) - nCenter);
+
+	float u = 1.0f;
+	if (height >= 11.0f)
+	{
+		u = 0.5f;
+		textures.push_back(archWindowTexture);
+	}
+	else if (height >= 8.0f)
+	{
+		u = 0.7f;
+		textures.push_back(apartmentTexture);
+	}
+	else if (height >= 6.0f)
+	{
+		u = 0.9f;
+		textures.push_back(applestoreTexture);
+	}
+	else
+	{
+		u = 0.9f;
+		textures.push_back(chipotleTexture);
+	}
+
 	textureCoords.push_back(glm::vec2(0.0, 1.0));
-	textureCoords.push_back(glm::vec2(1.0, 1.0));
-	textureCoords.push_back(glm::vec2(1.0, 0.0));
+	textureCoords.push_back(glm::vec2(u, 1.0));
+	textureCoords.push_back(glm::vec2(u, 0.0));
 	textureCoords.push_back(glm::vec2(0.0, 0.0));
 
-	textureCoords.push_back(glm::vec2(1.0, 1.0));
+	textureCoords.push_back(glm::vec2(u, 1.0));
 	textureCoords.push_back(glm::vec2(0.0, 1.0));
 	textureCoords.push_back(glm::vec2(0.0, 0.0));
-	textureCoords.push_back(glm::vec2(1.0, 0.0));
+	textureCoords.push_back(glm::vec2(u, 0.0));
 
 	// Keep repeating D:
 	unsigned int blah[36] = { 0, 1, 2, 2, 3, 0,
@@ -178,7 +216,7 @@ void QuadPrism::makeBuffers()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, NBO);
-	glBufferData(GL_ARRAY_BUFFER, bufferVertices.size() * 3 * 4, bufferVertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * 3 * 4, normals.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 
