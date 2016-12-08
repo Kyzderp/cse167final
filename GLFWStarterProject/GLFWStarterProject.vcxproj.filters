@@ -15,9 +15,9 @@
     <ClCompile Include="..\Skybox.cpp" />
     <ClCompile Include="..\Sphere.cpp" />
     <ClCompile Include="..\Window.cpp" />
-    <ClCompile Include="BumpOBJ.cpp" />
     <ClCompile Include="..\BounceTransform.cpp" />
     <ClCompile Include="..\BoundedGroup.cpp" />
+    <ClCompile Include="..\BumpOBJ.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Block.h" />

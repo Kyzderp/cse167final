@@ -41,6 +41,7 @@
     <ClCompile Include="..\Block.cpp" />
     <ClCompile Include="..\BounceTransform.cpp" />
     <ClCompile Include="..\BoundedGroup.cpp" />
+    <ClCompile Include="..\BumpOBJ.cpp" />
     <ClCompile Include="..\Cube.cpp" />
     <ClCompile Include="..\Floor.cpp" />
     <ClCompile Include="..\Geode.cpp" />
@@ -54,7 +55,6 @@
     <ClCompile Include="..\Skybox.cpp" />
     <ClCompile Include="..\Sphere.cpp" />
     <ClCompile Include="..\Window.cpp" />
-    <ClCompile Include="BumpOBJ.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shader.frag" />

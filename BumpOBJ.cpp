@@ -1,6 +1,6 @@
-#include "../BumpOBJ.h"
-#include "../Skybox.h"
-#include "../Window.h"
+#include "BumpOBJ.h"
+#include "Skybox.h"
+#include "Window.h"
 
 BumpOBJ::BumpOBJ(const char *filepath, const char *tex_filepath, const char *normal_filepath, glm::vec3 matAmb,
 	glm::vec3 matDiff,
