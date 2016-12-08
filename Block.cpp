@@ -212,8 +212,8 @@ void Block::makeBlock()
 	// Bounding box for housie
 	if (type == 3)
 	{
-		float housieX = 5.0f;
-		float housieZ = 7.0f;
+		float housieX = 4.0f;
+		float housieZ = 5.0f;
 		nn = glm::vec3(center.x - housieX, 0.0f, center.z - housieZ);
 		pn = glm::vec3(center.x + housieX, 0.0f, center.z - housieZ);
 		np = glm::vec3(center.x - housieX, 0.0f, center.z + housieZ);
