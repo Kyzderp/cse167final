@@ -13,7 +13,7 @@ public:
 
 	virtual void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
 	virtual void update() { Group::update(); }
-	bool checkBounds(glm::vec4 p);
+	bool checkBounds(glm::mat4 C);
 };
 
 #endif

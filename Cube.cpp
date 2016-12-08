@@ -56,7 +56,7 @@ Cube::~Cube()
 void Cube::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 { 
 	//if (Window::collisions) return;
-
+	shaderProgram = Window::solidShader;
 	glUseProgram(shaderProgram);
 
 	glEnable(GL_CULL_FACE);

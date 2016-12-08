@@ -6,6 +6,7 @@
 #include "OBJObject.h"
 #include "BumpOBJ.h"
 #include "BounceTransform.h"
+#include "BoundedGroup.h"
 #include "GLFWStarterProject/include/irrKlang.h"
 #include <time.h>       /* time */
 
@@ -49,13 +50,19 @@ int sphereCamera = 0; // 0 for default, 1 for sphere
 int Window::width;
 int Window::height;
 
+bool Window::inCollision;
+glm::vec3 boxMax;
+glm::vec3 boxMin;
+glm::vec3 Window::orangeMax;
+glm::vec3 Window::orangeMin;
+
 glm::mat4 Window::P;
 glm::mat4 Window::V;
 
 Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
-glm::vec4 sphereDir;
-float nick = 0.1f;
+glm::vec4 Window::sphereDir;
+float nick = 1.0f;
 float speed = 0.0f; // Current speed
 float maxSpeed = 0.3f;
 float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
@@ -105,7 +112,7 @@ void Window::initialize_objects()
 	prevY = 0;
 	showBB = 0;
 
-	///collisions = false;
+	Window::inCollision = false;
 
 	srand((unsigned)time(NULL));
 
@@ -114,18 +121,23 @@ void Window::initialize_objects()
 
 	// bounding box for bananas
 	bbox = new Cube();
-	//glm::vec4 p1(-2.0f, -2.0f, 2.0f, 1.0f);
-	//glm::vec4 p2(2.0f, 2.0f, -2.0f, 1.0f);
-	bbox->toWorld = bbox->toWorld * glm::scale(glm::mat4(1.0f), glm::vec3(0.15f, 0.55f, 0.37f));
+
+	glm::vec4 p1(-2.0f, -2.0f, 2.0f, 1.0f);
+	glm::vec4 p2(2.0f, 2.0f, -2.0f, 1.0f);
+
+	bbox->toWorld = bbox->toWorld * glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.55f, 0.37f));
 	bbox->toWorld = bbox->toWorld * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.3f, 0));
 
 	orange_bbox = new Cube();
 	orange_bbox->toWorld = orange_bbox->toWorld * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-	orange_bbox->toWorld = orange_bbox->toWorld * glm::translate(glm::mat4(1.0f), glm::vec3(0, 2.0f, 0));
-	//p1 = orange_bbox->toWorld * p1;
-	//p2 = orange_bbox->toWorld * p2;
-	//p1 /= p1.w;
-	//p2 /= p2.w;
+	p1 = bbox->toWorld * p1;
+	p2 = bbox->toWorld * p2;
+	p1 /= p1.w;
+	p2 /= p2.w;
+
+	boxMin = glm::vec3(p1);
+	boxMax = glm::vec3(p2);
+
 	//printf("p1: %f, %f, %f\n", p1.x , p1.y, p1.z);
 	//printf("p2: %f, %f, %f\n", p2.x, p2.y, p2.z);
 
@@ -183,10 +195,14 @@ void Window::initialize_objects()
 
 	nanners = new Group();
 	//rotation = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
-	bounce = new BounceTransform(glm::mat4(1.0f), glm::mat4(1.0f));
-	//rotation->addChild(banana);
-	//bounce->addChild(rotation);
-	nanners->addChild(bounce);
+	//bounce = new BounceTransform(glm::mat4(1.0f), glm::mat4(1.0f));
+	//nanners->addChild(bounce);
+	//nick
+	MatrixTransform *r = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
+
+	//r->addChild(banana);
+	//nanners->addChild(r);
+	//nanners->addChild(bbox);
 
 	createBananas();
 
@@ -325,6 +341,9 @@ void Window::display_callback(GLFWwindow* window)
 		spherePos.y = 1.0;
 	orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
 
+	glm::vec3 orangeMax = glm::vec3(glm::vec4(boxMax, 1.0f) * glm::translate(glm::mat4(1.0f), Window::spherePos));
+	glm::vec3 orangeMin = glm::vec3(glm::vec4(boxMin, 1.0f) * glm::translate(glm::mat4(1.0f), Window::spherePos));
+
 	// Collision with walls
 	int collided = 0;
 	Block* collisionBlock = flor->blocks[0];
@@ -376,6 +395,7 @@ void Window::display_callback(GLFWwindow* window)
 		glUniform3f(viewPosbump, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
 
 		orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
+		orange_bbox->draw(solidShader, glm::translate(glm::mat4(1.0f), spherePos), green);
 	}
 	else
 	{
@@ -383,7 +403,9 @@ void Window::display_callback(GLFWwindow* window)
 		glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
 
 		orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
+		orange_bbox->draw(solidShader, glm::translate(glm::mat4(1.0f), spherePos), green);
 	}
+
 
 	// now render objects
 	glUseProgram(shaderProgram);
@@ -394,8 +416,8 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
 
-	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-	housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+	//housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
@@ -406,7 +428,7 @@ void Window::display_callback(GLFWwindow* window)
 	{
 		for (int i = 0; i < flor->blocks.size(); i++)
 			flor->blocks[i]->drawBB(Window::solidShader, glm::mat4(1.0f));
-		cout << "sphereDir: " << sphereDir.x << " " << sphereDir.y << " " << sphereDir.z << endl;
+	//	cout << "sphereDir: " << sphereDir.x << " " << sphereDir.y << " " << sphereDir.z << endl;
 	}
 
 
@@ -422,7 +444,6 @@ void Window::createBananas()
 	std::vector<unsigned int> rIndices = flor->roadIndices;
 
 	int numNanners = rand() % 12 + 10;
-
 	for (int i = 0; i < numNanners; i++) {
 
 		int randIdx = rand() % rIndices.size() + 1; // any random index
@@ -447,12 +468,26 @@ void Window::createBananas()
 			x = v1.x;
 			z = v1.z;
 		}
+		// original cube coordinates before being changed
+		glm::vec4 p1(-2.0f, -2.0f, 2.0f, 1.0f);
+		glm::vec4 p2(2.0f, 2.0f, -2.0f, 1.0f);
+		// First stretch it to the correct size
+		p1 = bbox->toWorld * p1;
+		p2 = bbox->toWorld * p2;
+		p1 /= p1.w;
+		p2 /= p2.w;
 
-		BounceTransform *mt = new BounceTransform(glm::translate(glm::mat4(1.0f), glm::vec3(x, 2.0f, z)), glm::mat4(1.0f));
-		mt->addChild(bbox);
-		mt->addChild(banana);
-		//bounce->addChild(mt);
-		nanners->addChild(mt);
+		int height = rand() % 3 + 1.5;
+
+		BounceTransform *position = new BounceTransform(glm::translate(glm::mat4(1.0f), glm::vec3(x, height, z)), glm::mat4(1.0f));
+		MatrixTransform *rotation = new MatrixTransform(glm::mat4(1.0f), glm::mat4(1.0f));
+		BoundedGroup *bg = new BoundedGroup(glm::vec3(p1), glm::vec3(p2));
+
+		rotation->addChild(banana);
+		position->addChild(bg);
+		bg->addChild(rotation);
+		bg->addChild(bbox);
+		nanners->addChild(position);
 	}
 }
 

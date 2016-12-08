@@ -32,6 +32,10 @@ public:
 	static Group* housie;
 	static glm::vec4 sphereDir;
 
+	static bool inCollision;
+	static glm::vec3 orangeMin;
+	static glm::vec3 orangeMax;
+
 	static GLint solidShader;
 
 	///static bool collisions;
