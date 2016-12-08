@@ -460,6 +460,7 @@ void Window::display_callback(GLFWwindow* window)
 		for (int i = 0; i < flor->blocks.size(); i++)
 			flor->blocks[i]->drawBB(Window::solidShader, glm::mat4(1.0f));
 		orange_bbox->draw(solidShader, glm::translate(glm::mat4(1.0f), spherePos), color);
+		flor->drawRoads(Window::solidShader, glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	}
 
 
