@@ -57,7 +57,7 @@ public:
 	void rotateZ(float deg);
 	void reset();
 	void rotate(glm::vec3 axis, float deg);
-	GLuint loadTexture(const GLchar * path);
+	static GLuint loadTexture(const GLchar * path);
 };
 
 #endif

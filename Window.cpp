@@ -418,6 +418,9 @@ void Window::display_callback(GLFWwindow* window)
 
 	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 	//housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+	
+	// Draw buildings
+	//buildings->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.7f, 0.7f, 0.7f));
 
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 

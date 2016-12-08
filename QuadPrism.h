@@ -34,6 +34,8 @@ public:
 
 	glm::mat4 toWorld;
 
+	GLuint buildingTexture;
+
 	void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
 	void assignVertex(glm::vec3 point, glm::vec3 center);
 	void addPoints(glm::vec3 one, glm::vec3 two, glm::vec3 three, glm::vec3 four);
@@ -41,7 +43,7 @@ public:
 	void makeBuffers();
 
 	// These variables are needed for the shader program
-	GLuint VBO, VAO, EBO;
+	GLuint VBO, VAO, EBO, NBO, TBO;
 	GLuint uProjection, uModelview;
 
 
@@ -51,6 +53,7 @@ public:
 	std::vector<glm::vec3> bufferVertices;
 	std::vector<unsigned int> bufferIndices;
 	std::vector<float> colors;
+	std::vector<glm::vec2> textureCoords;
 };
 
 #endif

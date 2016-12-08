@@ -156,9 +156,6 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	{
 		blocks[i]->draw(Window::solidShader, C, glm::vec3(0.5f, 0.5f, 0.5f));
 	}
-
-	// Draw buildings
-	Window::buildings->draw(Window::solidShader, C, glm::vec3(0.7f, 0.7f, 0.7f));
 }
 
 void Floor::drawRoads(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
