@@ -59,6 +59,10 @@ glm::vec3 Window::orangeMin;
 glm::mat4 Window::P;
 glm::mat4 Window::V;
 
+int Window::collisionCamera;
+glm::vec3 Window::initialCameraPos;
+float Window::collisionAngle;
+
 Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
 glm::vec4 Window::sphereDir;
@@ -219,6 +223,10 @@ void Window::initialize_objects()
 
 	//banana->move(glm::vec3(0.0f, 1.0f, 0.0f));
 	//banana->scale(5.0f);
+
+	collisionCamera = 0;
+	initialCameraPos = sphere_cam_pos;
+	collisionAngle = 0.0f;
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
@@ -371,6 +379,18 @@ void Window::display_callback(GLFWwindow* window)
 			spherePos = spherePos + glm::vec3(sphereDir) * 0.01f;
 			//cout << "iteration ";
 		}
+
+		// Smoother camera when bouncing
+		collisionCamera = 20;
+		glm::vec3 cCamPos = sphere_cam_pos - spherePos;
+		glm::vec3 cCamNext = glm::vec3(spherePos + (glm::vec3(sphereDir) * -5.0f) + glm::vec3(0.0f, 3.0f, 0.0f)) - spherePos;
+		float totalAngle = atan2(cCamPos.z, cCamPos.x) - atan2(cCamNext.z, cCamNext.x);
+		if (totalAngle < -3.1)
+			totalAngle += 6.2;
+		if (totalAngle > 3.1)
+			totalAngle -= 6.2;
+		collisionAngle = -totalAngle / 20.0f;
+		cout << "angle: " << collisionAngle << endl;
 	}
 
 	Window::orangeMax = glm::vec3(glm::translate(glm::mat4(1.0f), Window::spherePos) * glm::vec4(boxMax, 1.0f));
@@ -415,10 +435,19 @@ void Window::display_callback(GLFWwindow* window)
 		color = red;
 	}
 
+
+	sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -5.0f) + glm::vec3(0.0f, 3.0f, 0.0f));
+	if (collisionCamera > 0)
+	{
+		collisionCamera--;
+		sphere_cam_pos = glm::vec3(
+			glm::rotate(glm::mat4(1.0f), collisionCamera * collisionAngle, glm::vec3(0.0f, 1.0f, 0.0f)) 
+			* glm::vec4(sphere_cam_pos - spherePos, 0.0f)) + spherePos;
+	}
+
 	if (sphereCamera)
 	{
 		// from pov of sphere
-		sphere_cam_pos = glm::vec3(spherePos + (glm::vec3(sphereDir) * -5.0f) + glm::vec3(0.0f, 3.0f, 0.0f));
 		sphere_cam_look_at = glm::vec3(spherePos + glm::vec3(0.0f, 2.0f, 0.0f));
 		Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
 		glUniform3f(viewPosLoc, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
@@ -452,7 +481,7 @@ void Window::display_callback(GLFWwindow* window)
 
 	housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
-	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+	//nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	if (showBB)
