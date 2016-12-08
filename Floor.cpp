@@ -155,9 +155,6 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	// Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
 	glBindVertexArray(0);
-
-	// Draw roads
-	drawRoads(Window::solidShader, C, glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
 void Floor::drawRoads(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
@@ -182,10 +179,10 @@ void Floor::drawRoads(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 
 void Floor::makeFloor()
 {
-	vertices.push_back(glm::vec3(size, 0.0f, size));
-	vertices.push_back(glm::vec3(-size, 0.0f, size));
-	vertices.push_back(glm::vec3(-size, 0.0f, -size));
-	vertices.push_back(glm::vec3(size, 0.0f, -size));
+	vertices.push_back(glm::vec3(size + 50.0f, 0.0f, size + 50.0f));
+	vertices.push_back(glm::vec3(-size - 50.0f, 0.0f, size + 50.0f));
+	vertices.push_back(glm::vec3(-size - 50.0f, 0.0f, -size - 50.0f));
+	vertices.push_back(glm::vec3(size + 50.0f, 0.0f, -size - 50.0f));
 
 	normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
 	normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));

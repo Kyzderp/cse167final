@@ -35,6 +35,10 @@ public:
 	static Group* housie;
 	static glm::vec4 sphereDir;
 
+	static int collisionCamera;
+	static glm::vec3 initialCameraPos;
+	static float collisionAngle;
+
 	static bool inCollision;
 	static int showBB;
 	static glm::vec3 orangeMin;
