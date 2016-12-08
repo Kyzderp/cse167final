@@ -16,6 +16,7 @@ in vec3 Tangent;
 uniform sampler2D tex;
 uniform sampler2D normalMap;
 uniform float matShininess;
+uniform bool showBumps;
 
 // For the scene
 uniform vec3 viewPos;
@@ -36,9 +37,13 @@ void main()
 
 	vec3 result = CalcDirLight(dirLight, n, viewDir);
 
-	color = vec4(result, 1.0);            // texture with lighting
+	if(showBumps) {
+	    color = texture(normalMap, tCoords);        // texture no lightin
+	} else {
+		color = vec4(result, 1.0);            // texture with lighting
+	}
 
-    //color = texture(tex, tCoords);        // texture no lighting
+
 	//color = vec4(1.0f, 1.0f, 0.0f, 1.0f); // yellow
 	//color = vec4(1.0f, norm);             // normal coloring
 }

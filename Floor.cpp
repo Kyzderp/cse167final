@@ -7,6 +7,7 @@
 using namespace std;
 
 GLuint floorTexture;
+GLuint floorNormal;
 
 Floor::Floor()
 {
@@ -18,6 +19,7 @@ Floor::Floor()
 	makeFloor();
 
 	floorTexture = loadTexture("../objects/asphalt.ppm");
+	floorNormal = loadTexture("../objects/asphalt_normal.ppm");
 
 	// Array object and buffers for road lines (debug purposes?)
 	glGenVertexArrays(1, &roadVAO);
@@ -140,8 +142,14 @@ void Floor::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 	glBindVertexArray(VAO);
 
 	glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
+	glUniform1i(glGetUniformLocation(shaderProgram, "normalMap"), 1);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, floorTexture);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, floorNormal);
+
 
 	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

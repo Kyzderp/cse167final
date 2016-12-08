@@ -17,6 +17,7 @@ GLint Window::solidShader;
 GLint shaderProgram;
 GLint skyboxShader;
 GLint bumpShader;
+bool showBumps;
 
 GLint viewPosLoc;
 GLint viewPosbump;
@@ -112,6 +113,7 @@ void Window::initialize_objects()
 	prevX = 0;
 	prevY = 0;
 	showBB = 0;
+	showBumps = false;
 
 	Window::inCollision = false;
 
@@ -311,6 +313,13 @@ void Window::idle_callback()
 
 void Window::display_callback(GLFWwindow* window)
 {
+
+	if (showBumps) {
+		glViewport(0, 0, width/2, height);
+	}
+	else {
+		glViewport(0, 0, width, height);
+	}
 	Window::inCollision = false;
 	color = green;
 
@@ -391,18 +400,17 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
 	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
 
-	//root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-	//housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
+	for (int i = 0; i < flor->blocks.size(); i++)
+		flor->blocks[i]->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	// Draw buildings
-	//buildings->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.7f, 0.7f, 0.7f));
+	buildings->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.7f, 0.7f, 0.7f));
+	housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
+	// Bananas
 	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
-	//orange_bbox->draw(solidShader, glm::mat4(1.0f), green);
-	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
-
-	// Draw orange
+	// Draw bumpy things
 	glUseProgram(bumpShader);
 	glUniform3f(viewPosbump, cam_pos.x, cam_pos.y, cam_pos.z);
 
@@ -410,6 +418,10 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.ambient"), 0.3f, 0.3f, 0.3f);
 	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
 	glUniform3f(glGetUniformLocation(bumpShader, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
+
+	glUniform1i(glGetUniformLocation(bumpShader, "showBumps"), false);
+
+	root->draw(bumpShader, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
 	if (Window::inCollision) {
 		color = red;
@@ -430,30 +442,10 @@ void Window::display_callback(GLFWwindow* window)
 	{
 		// default camera
 		glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
+		glUniform3f(viewPosbump, cam_pos.x, cam_pos.y, cam_pos.z);
 
 		orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
 	}
-
-	// now render objects
-	glUseProgram(shaderProgram);
-
-	// Set up light(s)
-	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.direction"), -0.2f, -1.0f, -0.7f);
-	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.ambient"), 0.3f, 0.3f, 0.3f);
-	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.diffuse"), 0.65f, 0.65f, 0.65f);
-	glUniform3f(glGetUniformLocation(shaderProgram, "dirLight.specular"), 0.75f, 0.75f, 0.75f);
-
-	root->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-	for (int i = 0; i < flor->blocks.size(); i++)
-		flor->blocks[i]->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
-
-	// Draw buildings
-	buildings->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(0.7f, 0.7f, 0.7f));
-
-	housies->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
-
-	nanners->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
-	//banana->draw(shaderProgram, glm::mat4(1.0f), glm::vec3(1.0f));
 
 	if (showBB)
 	{
@@ -462,6 +454,23 @@ void Window::display_callback(GLFWwindow* window)
 		orange_bbox->draw(solidShader, glm::translate(glm::mat4(1.0f), spherePos), color);
 	}
 
+	if (showBumps) {
+		glUseProgram(bumpShader);
+		glUniform1i(glGetUniformLocation(bumpShader, "showBumps"), showBumps);
+
+		glViewport(width/2, 0, width/2, height);
+		root->draw(bumpShader, glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+		if (sphereCamera) {
+			glUniform3f(viewPosLoc, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
+			glUniform3f(viewPosbump, sphere_cam_pos.x, sphere_cam_pos.y, sphere_cam_pos.z);
+			orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), sphere_cam_pos);
+		}
+		else {
+			glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
+			glUniform3f(viewPosbump, cam_pos.x, cam_pos.y, cam_pos.z);
+			orange->draw(bumpShader, glm::translate(glm::mat4(1.0f), spherePos), cam_pos);
+		}
+	}
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -548,6 +557,10 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				sphereCamera = 1;
 				Window::V = glm::lookAt(sphere_cam_pos, sphere_cam_look_at, sphere_cam_up);
 			}
+		}
+
+		else if (key == GLFW_KEY_N) {
+			showBumps = !showBumps;
 		}
 
 		// B to toggle bounding boxes
