@@ -62,7 +62,8 @@ glm::mat4 Window::V;
 Sphere* Window::sphere;
 glm::vec3 Window::spherePos;
 glm::vec4 Window::sphereDir;
-float nick = 0.05f;
+float nick = 1.0f;
+//float nick = 0.05f;
 float speed = 0.0f; // Current speed
 float maxSpeed = 0.3f;
 float vertSpeed = 0.0f; // Vertical speed, for gravity calcs. Up is positive.
@@ -344,31 +345,31 @@ void Window::display_callback(GLFWwindow* window)
 		spherePos.y = 1.0;
 	orange->rotate(glm::normalize(glm::vec3(-sphereDir.z, 0.0f, sphereDir.x)), -speed * 20.0f);
 
-	// Collision with walls
-	//int collided = 0;
-	//Block* collisionBlock = flor->blocks[0];
-	//for (int i = 0; i < flor->blocks.size(); i++)
-	//{
-	//	if (flor->blocks[i]->doCollisions(1))
-	//	{
-	//		// Pretty safe to assume it will only collide with one block at once, because
-	//		// the roads are wider than the orange
-	//		collided = 1;
-	//		collisionBlock = flor->blocks[i];
-	//		break;
-	//	}
-	//}
-	//if (collided) // Give an extra boost to get it out of the range
-	//{
-	//	spherePos = prevSpherePos;
-	//	spherePos = spherePos + glm::vec3(sphereDir) * speed;
-	//	// Extra iteration because sometimes it still isn't out of the range on a small angle
-	//	while (collisionBlock->doCollisions(0))
-	//	{
-	//		spherePos = spherePos + glm::vec3(sphereDir) * 0.01f;
-	//		cout << "iteration ";
-	//	}
-	//}
+	//Collision with walls
+	int collided = 0;
+	Block* collisionBlock = flor->blocks[0];
+	for (int i = 0; i < flor->blocks.size(); i++)
+	{
+		if (flor->blocks[i]->doCollisions(1))
+		{
+			// Pretty safe to assume it will only collide with one block at once, because
+			// the roads are wider than the orange
+			collided = 1;
+			collisionBlock = flor->blocks[i];
+			break;
+		}
+	}
+	if (collided) // Give an extra boost to get it out of the range
+	{
+		spherePos = prevSpherePos;
+		spherePos = spherePos + glm::vec3(sphereDir) * speed;
+		// Extra iteration because sometimes it still isn't out of the range on a small angle
+		while (collisionBlock->doCollisions(0))
+		{
+			spherePos = spherePos + glm::vec3(sphereDir) * 0.01f;
+			cout << "iteration ";
+		}
+	}
 
 	Window::orangeMax = glm::vec3(glm::translate(glm::mat4(1.0f), Window::spherePos) * glm::vec4(boxMax, 1.0f));
 	Window::orangeMin = glm::vec3(glm::translate(glm::mat4(1.0f), Window::spherePos) * glm::vec4(boxMin, 1.0f));
@@ -473,7 +474,7 @@ void Window::createBananas()
 	std::vector<glm::vec3> rVerts = flor->roadVertices;
 	std::vector<unsigned int> rIndices = flor->roadIndices;
 
-	int numNanners = rand() % 12 + 10;
+	int numNanners = rand() % 20 + 100;
 	//int numNanners = 1;
 	for (int i = 0; i < numNanners; i++) {
 
