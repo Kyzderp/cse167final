@@ -55,7 +55,8 @@ Cube::~Cube()
 
 void Cube::draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color)
 { 
-	//if (Window::collisions) return;
+	if (!Window::showBB) return;
+
 	shaderProgram = Window::solidShader;
 	glUseProgram(shaderProgram);
 

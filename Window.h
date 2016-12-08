@@ -15,6 +15,9 @@
 #include "shader.h"
 #include "Skybox.h"
 #include "QuadPrism.h"
+#include "GLFWStarterProject/include/irrKlang.h"
+
+using namespace irrklang;
 
 class Window
 {
@@ -33,12 +36,13 @@ public:
 	static glm::vec4 sphereDir;
 
 	static bool inCollision;
+	static int showBB;
 	static glm::vec3 orangeMin;
 	static glm::vec3 orangeMax;
 
 	static GLint solidShader;
 
-	///static bool collisions;
+	static ISoundEngine *se;
 
 	static void initialize_objects();
 	static void clean_up();

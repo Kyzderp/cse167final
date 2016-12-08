@@ -9,7 +9,7 @@ public:
 	BoundedGroup(glm::vec3 minPoint, glm::vec3 maxPoint);
 
 	glm::vec3 minPoint, maxPoint;
-	bool inCollision;
+	bool dead = false;
 
 	virtual void draw(GLuint shaderProgram, glm::mat4 C, glm::vec3 color);
 	virtual void update() { Group::update(); }
